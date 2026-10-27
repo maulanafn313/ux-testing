@@ -1,0 +1,1938 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#FFFFFF">
+  <title>Usability Testing - Ekosistem Digital Sorgum</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%231C4D31'/><circle cx='50' cy='30' r='9' fill='%23D9A53B'/><circle cx='36' cy='50' r='9' fill='%23D9A53B'/><circle cx='64' cy='50' r='9' fill='%23D9A53B'/><circle cx='50' cy='70' r='9' fill='%23D9A53B'/></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.14.5/dist/sweetalert2.min.css">
+  <style>
+    :root {
+      --ground: #FFFFFF;
+      --surface: #F1F3EC;
+      --surface-2: #E5E9DE;
+      --ink: #17251C;
+      --muted: #56645A;
+      --leaf: #1C4D31;
+      --leaf-2: #143724;
+      --grain: #D9A53B;
+      --grain-soft: #FBF1DA;
+      --grain-ink: #7A5410;
+    }
+    * { box-sizing: border-box; }
+    html { -webkit-text-size-adjust: 100%; }
+    body {
+      margin: 0; background: var(--ground); color: var(--ink);
+      font: 16px/1.5 'Plus Jakarta Sans', system-ui, sans-serif; -webkit-font-smoothing: antialiased;
+    }
+    button, input, select, textarea { font: inherit; color: inherit; }
+    button { cursor: pointer; }
+    :focus-visible { outline: 3px solid var(--grain); outline-offset: 2px; }
+    .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+    .wrap { max-width: 720px; margin: 0 auto; padding: 0 20px; }
+
+    /* Header: kembali, nama bagian, kosongkan, lalu progres */
+    .top { position: sticky; top: 0; z-index: 10; background: var(--ground); }
+    .top-row { display: flex; align-items: center; gap: 8px; height: 60px; }
+    .icon-btn { width: 44px; height: 44px; flex-shrink: 0; border: 0; border-radius: 8px; background: none; display: grid; place-items: center; transition: background .15s; }
+    .icon-btn:hover { background: var(--surface); }
+    .icon-spacer { width: 44px; flex-shrink: 0; }
+    .icon-btn svg { width: 22px; height: 22px; }
+    .section-name { flex: 1; margin: 0; text-align: center; font-size: 14px; font-weight: 700; color: var(--muted); }
+    .track { height: 4px; background: var(--surface); }
+    .track i { display: block; height: 100%; width: 0; background: var(--leaf); transition: width .35s ease; }
+
+    main.wrap { padding-top: 36px; padding-bottom: calc(128px + env(safe-area-inset-bottom)); }
+    .screen[hidden] { display: none; }
+    .enter-fwd { animation: in-fwd .28s ease-out both; }
+    .enter-back { animation: in-back .28s ease-out both; }
+    @keyframes in-fwd { from { opacity: 0; transform: translateX(28px); } }
+    @keyframes in-back { from { opacity: 0; transform: translateX(-28px); } }
+
+    /* Pembuka */
+    .hero-title { margin: 8px 0 16px; font-size: 36px; line-height: 1.08; font-weight: 800; letter-spacing: -.03em; }
+    .lead { margin: 0; font-size: 17px; }
+    .apps { list-style: none; padding: 0; margin: 32px 0 0; display: grid; gap: 8px; }
+    .apps li { display: flex; justify-content: space-between; gap: 12px; padding: 16px; border-radius: 8px; background: var(--surface); font-weight: 700; }
+    .apps span { font-weight: 500; color: var(--muted); }
+
+    /* Konteks tugas di atas pertanyaan */
+    .ctx { margin-bottom: 28px; }
+    .ctx-tag { margin: 0 0 8px; font-size: 18px; font-weight: 700; color: var(--leaf); }
+    .ctx-title { margin: 0; font-size: 25px; font-weight: 800; line-height: 1.25; letter-spacing: -.01em; }
+    .ctx-desc { margin: 12px 0 0; font-size: 20px; line-height: 1.5; }
+    .open-link { display: inline-flex; align-items: center; gap: 6px; margin-top: 16px; font-size: 19px; font-weight: 700; color: var(--leaf); text-underline-offset: 3px; }
+    .open-link svg { width: 16px; height: 16px; }
+
+    /* Layar baca tugas: dibaca dulu, dijawab di layar berikutnya */
+    .task-title { margin: 0; font-size: 34px; line-height: 1.15; font-weight: 800; letter-spacing: -.02em; }
+    .task-desc { margin: 20px 0 0; font-size: 23px; line-height: 1.5; }
+    [data-kind="task"] .ctx-tag { margin-bottom: 14px; }
+    [data-kind="task"] .open-link { margin-top: 28px; font-size: 21px; }
+    [data-kind="task"] .open-link svg { width: 20px; height: 20px; }
+
+    /* Pertanyaan */
+    .q { display: block; margin: 0 0 24px; font-size: 34px; line-height: 1.2; font-weight: 800; letter-spacing: -.02em; }
+    .q .req { color: #B42318; }
+    .hint { margin: 12px 0 0; font-size: 16px; color: var(--muted); }
+    .field { display: block; width: 100%; border: 0; border-radius: 8px; background: var(--surface); padding: 16px; font-size: 18px; outline: 2px solid transparent; transition: outline-color .15s, background .15s; }
+    .field::placeholder { color: #7D897F; }
+    .field:focus { outline-color: var(--leaf); background: var(--ground); }
+    textarea.field { min-height: 150px; resize: vertical; line-height: 1.5; }
+
+    .chips { display: grid; gap: 10px; }
+    .chip {
+      display: flex; align-items: center; gap: 14px; width: 100%; padding: 16px; border: 0; border-radius: 8px;
+      background: var(--surface); text-align: left; font-size: 20px; font-weight: 600; line-height: 1.35;
+      transition: background .15s, color .15s, transform .1s;
+    }
+    .chip::before { content: ''; width: 24px; height: 24px; flex-shrink: 0; border-radius: 50%; border: 2px solid currentColor; transition: border-width .15s; }
+    .chip:hover { background: var(--surface-2); }
+    .chip:active { transform: scale(.985); }
+    .chip[aria-pressed="true"] { background: var(--tone, var(--leaf)); color: #fff; }
+    .chip[aria-pressed="true"]::before { border-width: 7px; }
+    [data-tone="ok"] { --tone: #1F7A45; }
+    [data-tone="partial"] { --tone: #93590A; }
+    [data-tone="fail"] { --tone: #B42318; }
+    [data-tone="skip"] { --tone: #5B6878; }
+
+    /* Skala SEQ: batang makin tinggi seperti malai sorgum tumbuh */
+    .seq { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; align-items: end; height: 148px; }
+    .seq-bar {
+      height: calc(56px + var(--i) * 14px); border: 0; border-radius: 8px; background: var(--surface);
+      display: flex; align-items: flex-end; justify-content: center; padding-bottom: 10px;
+      font-size: 22px; font-weight: 800; color: var(--muted); transition: background .2s, color .2s, transform .1s;
+    }
+    .seq-bar:hover { background: var(--surface-2); }
+    .seq-bar:active { transform: scale(.96); }
+    .seq-bar.is-filled { background: var(--grain-soft); color: var(--grain-ink); }
+    .seq-bar[aria-pressed="true"] { background: var(--grain); color: var(--ink); }
+    .seq-ends { display: flex; justify-content: space-between; margin-top: 12px; font-size: 17px; color: var(--muted); }
+    .seq-value { margin: 24px 0 0; font-size: 22px; font-weight: 700; }
+
+    /* Ringkasan */
+    .avg { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 18px; border-radius: 8px; background: var(--grain-soft); font-weight: 600; }
+    .avg b { font-size: 24px; font-weight: 800; color: var(--grain-ink); white-space: nowrap; }
+    .legend { display: flex; flex-wrap: wrap; gap: 8px 18px; list-style: none; padding: 0; margin: 20px 0 12px; font-size: 14px; color: var(--muted); }
+    .legend li { display: flex; align-items: center; gap: 8px; }
+    .legend b { color: var(--ink); }
+    .dot { width: 12px; height: 12px; flex-shrink: 0; border-radius: 50%; background: var(--tone); }
+    .task-list { list-style: none; padding: 0; margin: 0 0 20px; display: grid; gap: 6px; }
+    .task-row { display: flex; align-items: center; gap: 12px; width: 100%; padding: 13px 14px; border: 0; border-radius: 8px; background: var(--surface); text-align: left; font-size: 15px; transition: background .15s; }
+    .task-row:hover { background: var(--surface-2); }
+    .sent-note { margin: 0 0 16px; padding: 14px 16px; border-radius: 8px; background: #E6F4EB; color: #1F5A36; font-weight: 600; }
+    .sent-note[hidden] { display: none; }
+    .js-tasks + .sent-note { margin-top: 4px; }
+    .legend + .js-preview { margin-bottom: 24px; }
+    [data-kind="module"] .lead { margin-bottom: 24px; }
+    .task-row .seqv { margin-left: auto; font-weight: 700; white-space: nowrap; }
+
+    /* Tombol bawah */
+    .bar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 10; background: var(--ground); padding: 12px 0 calc(12px + env(safe-area-inset-bottom)); }
+    .btn { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; height: 56px; border: 0; border-radius: 8px; background: var(--leaf); color: #fff; font-size: 17px; font-weight: 700; text-decoration: none; transition: background .15s, transform .1s; }
+    .btn:hover { background: var(--leaf-2); }
+    .btn:active { transform: scale(.99); }
+    .btn.is-send { background: var(--grain); color: var(--ink); }
+    .btn.is-send:hover { background: #C8952E; }
+    .btn-quiet { background: var(--surface); color: var(--ink); }
+    .btn-quiet:hover { background: var(--surface-2); }
+    .btn svg { width: 18px; height: 18px; flex-shrink: 0; }
+    .app-open { margin-top: 28px; }
+    .bar-row { display: flex; gap: 10px; }
+    .bar-row .btn-back { flex: 0 0 calc(25% - 5px); }
+    .bar-row .btn-back[hidden] { display: none; }
+    .bar-row .btn-back svg { width: 26px; height: 26px; }
+    .bar-row #nextStepBtn { flex: 1; }
+
+    /* Mengetik di HP: tombol ikut alur halaman (di bawah kolom), bukan menempel di atas keyboard */
+    body.typing .bar { position: static; padding-top: 20px; }
+    body.typing main.wrap { padding-top: 24px; padding-bottom: 0; }
+    body.typing .ctx { display: none; }
+
+    @media (min-width: 640px) {
+      main.wrap { padding-top: 56px; }
+      .q { font-size: 46px; }
+      .task-title { font-size: 48px; }
+      .task-desc { font-size: 27px; }
+      .ctx-tag { font-size: 20px; }
+      .ctx-title { font-size: 30px; }
+      .ctx-desc { font-size: 22px; }
+      .chip { font-size: 22px; padding: 20px; }
+      .hero-title { font-size: 44px; }
+    }
+    @media (pointer: coarse) {
+      input, select, textarea { font-size: max(16px, 1em); }
+    }
+
+    /* SweetAlert2 */
+    .swal2-popup { font-family: inherit; border-radius: 12px; color: var(--ink); padding: 1.6em 1.25em 1.3em; }
+    .swal2-title { font-size: 1.3rem; font-weight: 800; color: var(--ink); }
+    .swal2-html-container { font-size: 1rem; color: var(--ink); line-height: 1.55; }
+    .swal2-styled { border-radius: 8px !important; font-weight: 700 !important; padding: .8em 1.4em !important; box-shadow: none !important; }
+    .swal2-styled.swal-btn-muted { color: var(--ink) !important; }
+    .swal2-toast { pointer-events: none; border-radius: 8px !important; }
+    .swal2-toast .swal2-title { font-size: .9rem; font-weight: 600; }
+    .swal2-container.swal2-bottom { bottom: calc(80px + env(safe-area-inset-bottom)) !important; }
+    .swal2-icon.swal2-question { border-color: #E9C77A; color: var(--grain-ink); }
+    .swal2-icon.swal2-success { border-color: #1F7A45; color: #1F7A45; }
+    .swal2-icon.swal2-success .swal2-success-ring { border-color: rgba(31, 122, 69, .3); }
+    .swal2-icon.swal2-success [class^='swal2-success-line'] { background-color: #1F7A45; }
+    .md-preview {
+      text-align: left; margin: 0; padding: 14px; border-radius: 8px; max-height: 55vh; overflow: auto;
+      background: #0F1A13; color: #E5EDE7; white-space: pre-wrap; word-break: break-word;
+      font: 12px/1.6 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation: none !important; transition: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <header class="top">
+    <div class="wrap top-row">
+      <span class="icon-spacer" aria-hidden="true"></span>
+      <p id="sectionName" class="section-name">Sorgum Living Labs</p>
+      <button type="button" id="resetBtn" class="icon-btn" aria-label="Kosongkan formulir" title="Kosongkan formulir">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+      </button>
+    </div>
+    <div class="track" role="progressbar" aria-label="Progres pengisian" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i id="stepProgressBar"></i></div>
+  </header>
+
+  <main class="wrap">
+    <form id="usabilityTestForm" novalidate>
+      <section class="screen" data-section="Sorgum Living Labs" data-kind="welcome" data-next="Mulai" hidden>
+        <h1 class="hero-title">Uji coba 4 aplikasi sorgum</h1>
+        <p class="lead">Ada 17 tugas singkat. Setiap layar berisi satu pertanyaan, dan hasil dikirim setiap selesai satu aplikasi.</p>
+        <ol class="apps">
+          <li>Dashboard IoT<span>5 tugas</span></li>
+          <li>E-Catalog Sorgum<span>4 tugas</span></li>
+          <li>SCM Sorgum<span>5 tugas</span></li>
+          <li>Community Sorgum<span>3 tugas</span></li>
+        </ol>
+      </section>
+
+      <section class="screen" data-section="Profil" hidden>
+        <div class="ctx">
+          <p class="ctx-tag">Identitas Partisipan & Sesi</p>
+        </div>
+        <label class="q" for="participantName">Nama Lengkap Partisipan <span class="req">*</span></label>
+        <input class="field" type="text" id="participantName" required placeholder="Contoh: Tri Wahyudi" autocomplete="name">
+      </section>
+
+      <section class="screen" data-section="Profil" hidden>
+        <div class="ctx">
+          <p class="ctx-tag">Identitas Partisipan & Sesi</p>
+        </div>
+        <h2 class="q" id="q-participantRole">Peran / Latar Belakang</h2>
+        <select id="participantRole">
+                  <option value="Petani / Kelompok Tani">Petani / Kelompok Tani</option>
+                  <option value="Pelaku UMKM / Industri">Pelaku UMKM / Industri</option>
+                  <option value="Peneliti / Akademisi">Peneliti / Akademisi</option>
+                  <option value="Masyarakat Umum / Konsumen">Masyarakat Umum / Konsumen</option>
+                  <option value="UI/UX Specialist / Developer">UI/UX Specialist / Developer</option>
+                </select>
+      </section>
+
+      <section class="screen" data-section="Profil" hidden>
+        <div class="ctx">
+          <p class="ctx-tag">Identitas Partisipan & Sesi</p>
+        </div>
+        <h2 class="q" id="q-deviceUsed">Perangkat Uji</h2>
+        <select id="deviceUsed">
+                  <option value="Smartphone (Mobile Web)" selected>Smartphone (Mobile Web)</option>
+                  <option value="Laptop / Desktop (Browser)">Laptop / Desktop (Browser)</option>
+                  <option value="Tablet">Tablet</option>
+                </select>
+      </section>
+
+      <section class="screen" data-section="Dashboard IoT" data-kind="app" data-next="Mulai tugas" hidden>
+        <h2 class="q">Aplikasi 1: Dashboard IoT</h2>
+        <p class="lead">5 Skenario Fitur Monitoring Lahan</p>
+        <p class="hint">5 Task</p>
+        <a href="https://sorgum.livinglabs.id/" target="_blank" rel="noopener noreferrer" class="btn btn-quiet app-open"><span>Buka sorgum.livinglabs.id</span><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg></a>
+      </section>
+
+      <section class="screen" data-section="Dashboard IoT" data-kind="task" data-next="Jawab pertanyaan" hidden>
+        <p class="ctx-tag">Task 1.1 • Monitoring Tanah</p>
+        <h2 class="task-title">Pembacaan Metrik Sensor Tanah (Moisture, NPK, pH)</h2>
+        <p class="task-desc">Buka modul monitoring tanah dan temukan kondisi kelembapan, suhu perakaran tanah, atau kadar hara pada blok lahan tertentu.</p>
+        <a href="https://sorgum.livinglabs.id/" target="_blank" rel="noopener noreferrer" class="open-link">Buka sorgum.livinglabs.id<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg></a>
+      </section>
+
+      <section class="screen" data-section="Dashboard IoT" hidden>
+        <div class="ctx">
+          <p class="ctx-tag">Task 1.1 • Monitoring Tanah</p>
+          <p class="ctx-title">Pembacaan Metrik Sensor Tanah (Moisture, NPK, pH)</p>
+        </div>
+        <h2 class="q" id="q-status_1_1">Status Keberhasilan</h2>
+        <select id="status_1_1">
+                    <option value="Berhasil Mandiri (Success)">Berhasil Mandiri (Tanpa Bantuan)</option>
+                    <option value="Berhasil dengan Kendala (Partial)">Berhasil dengan Kendala / Bantuan</option>
+                    <option value="Gagal (Failed)">Gagal Menyelesaikan</option>
+                    <option value="Dilewati (Skipped)">Dilewati / Tidak Diuji</option>
+                  </select>
+      </section>
+
+      <section class="screen" data-section="Dashboard IoT" hidden>
+        <div class="ctx">
+          <p class="ctx-tag">Task 1.1 • Monitoring Tanah</p>
+          <p class="ctx-title">Pembacaan Metrik Sensor Tanah (Moisture, NPK, pH)</p>
+        </div>
+        <h2 class="q" id="q-seq_1_1">Skor SEQ (1-7)</h2>
+        <select id="seq_1_1">
+                      <option value="7">7 - Sangat Mudah</option>
+                      <option value="6">6 - Mudah</option>
+                      <option value="5" selected>5 - Cukup Mudah</option>
+                      <option value="4">4 - Netral</option>
+                      <option value="3">3 - Cukup Sulit</option>
+                      <option value="2">2 - Sulit</option>
+                      <option value="1">1 - Sangat Sulit</option>
+                    </select>
+      </section>
+
+      <section class="screen" data-section="Dashboard IoT" hidden>
+        <div class="ctx">
+          <p class="ctx-tag">Task 1.1 • Monitoring Tanah</p>
+          <p class="ctx-title">Pembacaan Metrik Sensor Tanah (Moisture, NPK, pH)</p>
+        </div>
+        <label class="q" for="notes_1_1">Catatan Kendala & Temuan UX</label>
+        <textarea class="field" id="notes_1_1" rows="2" placeholder="Catatan keterbacaan data tanah..."></textarea>
+        <p class="hint">Boleh dikosongkan.</p>
+      </section>
+
+      <section class="screen" data-section="Dashboard IoT" data-kind="task" data-next="Jawab pertanyaan" hidden>
+        <p class="ctx-tag">Task 1.2 • Monitoring Cuaca</p>
+        <h2 class="task-title">Pemantauan Cuaca Lingkungan & AWS Sensor</h2>
+        <p class="task-desc">Akses data stasiun cuaca mikro (AWS) untuk memeriksa suhu udara ambien, kelembapan udara (RH), curah hujan, atau radiasi matahari.</p>
+        <a href="https://sorgum.livinglabs.id/" target="_blank" rel="noopener noreferrer" class="open-link">Buka sorgum.livinglabs.id<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg></a>
+      </section>
+
+      <section class="screen" data-section="Dashboard IoT" hidden>
+        <div class="ctx">
+          <p class="ctx-tag">Task 1.2 • Monitoring Cuaca</p>
+          <p class="ctx-title">Pemantauan Cuaca Lingkungan & AWS Sensor</p>
+        </div>
+        <h2 class="q" id="q-status_1_2">Status Keberhasilan</h2>
+        <select id="status_1_2">
+                    <option value="Berhasil Mandiri (Success)">Berhasil Mandiri (Tanpa Bantuan)</option>
+                    <option value="Berhasil dengan Kendala (Partial)">Berhasil dengan Kendala / Bantuan</option>
+                    <option value="Gagal (Failed)">Gagal Menyelesaikan</option>
+                    <option value="Dilewati (Skipped)">Dilewati / Tidak Diuji</option>
+                  </select>
+      </section>
+
+      <section class="screen" data-section="Dashboard IoT" hidden>
+        <div class="ctx">
+          <p class="ctx-tag">Task 1.2 • Monitoring Cuaca</p>
+          <p class="ctx-title">Pemantauan Cuaca Lingkungan & AWS Sensor</p>
+        </div>
+        <h2 class="q" id="q-seq_1_2">Skor SEQ (1-7)</h2>
+        <select id="seq_1_2">
+                      <option value="7">7 - Sangat Mudah</option>
+                      <option value="6">6 - Mudah</option>
+                      <option value="5" selected>5 - Cukup Mudah</option>
+                      <option value="4">4 - Netral</option>
+                      <option value="3">3 - Cukup Sulit</option>
+                      <option value="2">2 - Sulit</option>
+                      <option value="1">1 - Sangat Sulit</option>
+                    </select>
+      </section>
+
+      <section class="screen" data-section="Dashboard IoT" hidden>
+        <div class="ctx">
+          <p class="ctx-tag">Task 1.2 • Monitoring Cuaca</p>
+          <p class="ctx-title">Pemantauan Cuaca Lingkungan & AWS Sensor</p>
+        </div>
+        <label class="q" for="notes_1_2">Catatan Kendala & Temuan UX</label>
+        <textarea class="field" id="notes_1_2" rows="2" placeholder="Catatan pembacaan cuaca..."></textarea>
+        <p class="hint">Boleh dikosongkan.</p>
+      </section>
+
+      <section class="screen" data-section="Dashboard IoT" data-kind="task" data-next="Jawab pertanyaan" hidden>
+        <p class="ctx-tag">Task 1.3 • Status Kebun</p>
+        <h2 class="task-title">Pemetaan Visual Blok Lahan & Kesehatan Tanaman</h2>
+        <p class="task-desc">Eksplorasi peta/tata letak kebun atau ringkasan status operasional blok kebun sorgum (kondisi normal, perlu irigasi, atau waspada hama).</p>
+        <a href="https://sorgum.livinglabs.id/" target="_blank" rel="noopener noreferrer" class="open-link">Buka sorgum.livinglabs.id<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg></a>
+      </section>
+
+      <section class="screen" data-section="Dashboard IoT" hidden>
+        <div class="ctx">
+          <p class="ctx-tag">Task 1.3 • Status Kebun</p>
+          <p class="ctx-title">Pemetaan Visual Blok Lahan & Kesehatan Tanaman</p>
+        </div>
+        <h2 class="q" id="q-status_1_3">Status Keberhasilan</h2>
+        <select id="status_1_3">
+                    <option value="Berhasil Mandiri (Success)">Berhasil Mandiri (Tanpa Bantuan)</option>
+                    <option value="Berhasil dengan Kendala (Partial)">Berhasil dengan Kendala / Bantuan</option>
+                    <option value="Gagal (Failed)">Gagal Menyelesaikan</option>
+                    <option value="Dilewati (Skipped)">Dilewati / Tidak Diuji</option>
+                  </select>
+      </section>
+
+      <section class="screen" data-section="Dashboard IoT" hidden>
+        <div class="ctx">
+          <p class="ctx-tag">Task 1.3 • Status Kebun</p>
+          <p class="ctx-title">Pemetaan Visual Blok Lahan & Kesehatan Tanaman</p>
+        </div>
+        <h2 class="q" id="q-seq_1_3">Skor SEQ (1-7)</h2>
+        <select id="seq_1_3">
+                      <option value="7">7 - Sangat Mudah</option>
+                      <option value="6">6 - Mudah</option>
+                      <option value="5" selected>5 - Cukup Mudah</option>
+                      <option value="4">4 - Netral</option>
+                      <option value="3">3 - Cukup Sulit</option>
+                      <option value="2">2 - Sulit</option>
+                      <option value="1">1 - Sangat Sulit</option>
+                    </select>
+      </section>
+
+      <section class="screen" data-section="Dashboard IoT" hidden>
+        <div class="ctx">
+          <p class="ctx-tag">Task 1.3 • Status Kebun</p>
+          <p class="ctx-title">Pemetaan Visual Blok Lahan & Kesehatan Tanaman</p>
+        </div>
+        <label class="q" for="notes_1_3">Catatan Kendala & Temuan UX</label>
+        <textarea class="field" id="notes_1_3" rows="2" placeholder="Catatan modul peta/status kebun..."></textarea>
+        <p class="hint">Boleh dikosongkan.</p>
+      </section>
+
+      <section class="screen" data-section="Dashboard IoT" data-kind="task" data-next="Jawab pertanyaan" hidden>
+        <p class="ctx-tag">Task 1.4 • Notifikasi</p>
+        <h2 class="task-title">Pengecekan Peringatan Dini & Riwayat Alarm (Alerts)</h2>
+        <p class="task-desc">Buka panel lonceng notifikasi/log alert untuk memeriksa riwayat pemberitahuan kondisi abnormal (contoh: tanah kering di bawah ambang batas).</p>
+        <a href="https://sorgum.livinglabs.id/" target="_blank" rel="noopener noreferrer" class="open-link">Buka sorgum.livinglabs.id<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg></a>
+      </section>
+
+      <section class="screen" data-section="Dashboard IoT" hidden>
+        <div class="ctx">
+          <p class="ctx-tag">Task 1.4 • Notifikasi</p>
+          <p class="ctx-title">Pengecekan Peringatan Dini & Riwayat Alarm (Alerts)</p>
+        </div>
+        <h2 class="q" id="q-status_1_4">Status Keberhasilan</h2>
+        <select id="status_1_4">
+                    <option value="Berhasil Mandiri (Success)">Berhasil Mandiri (Tanpa Bantuan)</option>
+                    <option value="Berhasil dengan Kendala (Partial)">Berhasil dengan Kendala / Bantuan</option>
+                    <option value="Gagal (Failed)">Gagal Menyelesaikan</option>
+                    <option value="Dilewati (Skipped)">Dilewati / Tidak Diuji</option>
+                  </select>
+      </section>
+
+      <section class="screen" data-section="Dashboard IoT" hidden>
+        <div class="ctx">
+          <p class="ctx-tag">Task 1.4 • Notifikasi</p>
+          <p class="ctx-title">Pengecekan Peringatan Dini & Riwayat Alarm (Alerts)</p>
+        </div>
+        <h2 class="q" id="q-seq_1_4">Skor SEQ (1-7)</h2>
+        <select id="seq_1_4">
+                      <option value="7">7 - Sangat Mudah</option>
+                      <option value="6">6 - Mudah</option>
+                      <option value="5" selected>5 - Cukup Mudah</option>
+                      <option value="4">4 - Netral</option>
+                      <option value="3">3 - Cukup Sulit</option>
+                      <option value="2">2 - Sulit</option>
+                      <option value="1">1 - Sangat Sulit</option>
+                    </select>
+      </section>
+
+      <section class="screen" data-section="Dashboard IoT" hidden>
+        <div class="ctx">
+          <p class="ctx-tag">Task 1.4 • Notifikasi</p>
+          <p class="ctx-title">Pengecekan Peringatan Dini & Riwayat Alarm (Alerts)</p>
+        </div>
+        <label class="q" for="notes_1_4">Catatan Kendala & Temuan UX</label>
+        <textarea class="field" id="notes_1_4" rows="2" placeholder="Catatan fitur notifikasi..."></textarea>
+        <p class="hint">Boleh dikosongkan.</p>
+      </section>
+
+      <section class="screen" data-section="Dashboard IoT" data-kind="task" data-next="Jawab pertanyaan" hidden>
+        <p class="ctx-tag">Task 1.5 • Analisis AI</p>
+        <h2 class="task-title">Eksplorasi Wawasan Cerdas & Rekomendasi Tindakan AI</h2>
+        <p class="task-desc">Akses modul rekomendasi berbasis AI/machine learning (misal: rekomendasi dosis pemupukan, prediksi waktu panen, atau saran irigasi hemat air).</p>
+        <a href="https://sorgum.livinglabs.id/" target="_blank" rel="noopener noreferrer" class="open-link">Buka sorgum.livinglabs.id<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg></a>
+      </section>
+
+      <section class="screen" data-section="Dashboard IoT" hidden>
+        <div class="ctx">
+          <p class="ctx-tag">Task 1.5 • Analisis AI</p>
+          <p class="ctx-title">Eksplorasi Wawasan Cerdas & Rekomendasi Tindakan AI</p>
+        </div>
+        <h2 class="q" id="q-status_1_5">Status Keberhasilan</h2>
+        <select id="status_1_5">
+                    <option value="Berhasil Mandiri (Success)">Berhasil Mandiri (Tanpa Bantuan)</option>
+                    <option value="Berhasil dengan Kendala (Partial)">Berhasil dengan Kendala / Bantuan</option>
+                    <option value="Gagal (Failed)">Gagal Menyelesaikan</option>
+                    <option value="Dilewati (Skipped)">Dilewati / Tidak Diuji</option>
+                  </select>
+      </section>
+
+      <section class="screen" data-section="Dashboard IoT" hidden>
+        <div class="ctx">
+          <p class="ctx-tag">Task 1.5 • Analisis AI</p>
+          <p class="ctx-title">Eksplorasi Wawasan Cerdas & Rekomendasi Tindakan AI</p>
+        </div>
+        <h2 class="q" id="q-seq_1_5">Skor SEQ (1-7)</h2>
+        <select id="seq_1_5">
+                      <option value="7">7 - Sangat Mudah</option>
+                      <option value="6">6 - Mudah</option>
+                      <option value="5" selected>5 - Cukup Mudah</option>
+                      <option value="4">4 - Netral</option>
+                      <option value="3">3 - Cukup Sulit</option>
+                      <option value="2">2 - Sulit</option>
+                      <option value="1">1 - Sangat Sulit</option>
+                    </select>
+      </section>
+
+      <section class="screen" data-section="Dashboard IoT" hidden>
+        <div class="ctx">
+          <p class="ctx-tag">Task 1.5 • Analisis AI</p>
+          <p class="ctx-title">Eksplorasi Wawasan Cerdas & Rekomendasi Tindakan AI</p>
+        </div>
+        <label class="q" for="notes_1_5">Catatan Kendala & Temuan UX</label>
+        <textarea class="field" id="notes_1_5" rows="2" placeholder="Catatan modul analisis AI..."></textarea>
+        <p class="hint">Boleh dikosongkan.</p>
+      </section>
+
+      <section class="screen" data-section="Dashboard IoT" data-kind="module" data-module="Dashboard IoT" hidden>
+        <h2 class="q">Kirim hasil Dashboard IoT</h2>
+        <div class="avg"><span>Rata-rata kemudahan (SEQ)</span><b class="js-avg">-</b></div>
+        <ul class="legend">
+          <li><span class="dot" data-tone="ok"></span>Berhasil mandiri <b data-count="ok">0</b></li>
+          <li><span class="dot" data-tone="partial"></span>Dengan kendala <b data-count="partial">0</b></li>
+          <li><span class="dot" data-tone="fail"></span>Gagal <b data-count="fail">0</b></li>
+          <li><span class="dot" data-tone="skip"></span>Dilewati <b data-count="skip">0</b></li>
+        </ul>
+        <button type="button" class="btn btn-quiet js-preview">Lihat pratinjau .md</button>
+        <p class="hint">Ketuk sebuah tugas untuk mengubah jawabannya.</p>
+        <ul class="task-list js-tasks"></ul>
+        <p class="sent-note" hidden>Modul ini sudah dikirim. Mengirim lagi akan menyimpan data baru.</p>
+      </section>
+
+      <section class="screen" data-section="E-Catalog Sorgum" data-kind="app" data-next="Mulai tugas" hidden>
+        <h2 class="q">Aplikasi 2: E-Catalog Sorgum</h2>
+        <p class="lead">4 Skenario Katalog & Pemesanan</p>
+        <p class="hint">4 Task</p>
+        <a href="https://catalog.livinglabs.id" target="_blank" rel="noopener noreferrer" class="btn btn-quiet app-open"><span>Buka catalog.livinglab.id</span><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg></a>
+      </section>
+
+      <section class="screen" data-section="E-Catalog Sorgum" data-kind="task" data-next="Jawab pertanyaan" hidden>
+        <p class="ctx-tag">Task 2.1 • Lihat / Cari Produk</p>
+        <h2 class="task-title">Eksplorasi Etalase & Pencarian Produk Beras/Tepung</h2>
+        <p class="task-desc">Gunakan search bar atau kategori filter untuk mencari produk tertentu (misalnya beras sorgum merah, tepung, atau snack olahan).</p>
+        <a href="https://catalog.livinglabs.id" target="_blank" rel="noopener noreferrer" class="open-link">Buka catalog.livinglab.id<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg></a>
+      </section>
+
+      <section class="screen" data-section="E-Catalog Sorgum" hidden>
+        <div class="ctx">
+          <p class="ctx-tag">Task 2.1 • Lihat / Cari Produk</p>
+          <p class="ctx-title">Eksplorasi Etalase & Pencarian Produk Beras/Tepung</p>
+        </div>
+        <h2 class="q" id="q-status_2_1">Status Keberhasilan</h2>
+        <select id="status_2_1">
+                    <option value="Berhasil Mandiri (Success)">Berhasil Mandiri (Tanpa Bantuan)</option>
+                    <option value="Berhasil dengan Kendala (Partial)">Berhasil dengan Kendala / Bantuan</option>
+                    <option value="Gagal (Failed)">Gagal Menyelesaikan</option>
+                    <option value="Dilewati (Skipped)">Dilewati / Tidak Diuji</option>
+                  </select>
+      </section>
+
+      <section class="screen" data-section="E-Catalog Sorgum" hidden>
+        <div class="ctx">
+          <p class="ctx-tag">Task 2.1 • Lihat / Cari Produk</p>
+          <p class="ctx-title">Eksplorasi Etalase & Pencarian Produk Beras/Tepung</p>
+        </div>
+        <h2 class="q" id="q-seq_2_1">Skor SEQ (1-7)</h2>
+        <select id="seq_2_1">
+                      <option value="7">7 - Sangat Mudah</option>
+                      <option value="6">6 - Mudah</option>
+                      <option value="5" selected>5 - Cukup Mudah</option>
+                      <option value="4">4 - Netral</option>
+                      <option value="3">3 - Cukup Sulit</option>
+                      <option value="2">2 - Sulit</option>
+                      <option value="1">1 - Sangat Sulit</option>
+                    </select>
+      </section>
+
+      <section class="screen" data-section="E-Catalog Sorgum" hidden>
+        <div class="ctx">
+          <p class="ctx-tag">Task 2.1 • Lihat / Cari Produk</p>
+          <p class="ctx-title">Eksplorasi Etalase & Pencarian Produk Beras/Tepung</p>
+        </div>
+        <label class="q" for="notes_2_1">Catatan Kendala & Temuan UX</label>
+        <textarea class="field" id="notes_2_1" rows="2" placeholder="Catatan efisiensi pencarian..."></textarea>
+        <p class="hint">Boleh dikosongkan.</p>
+      </section>
+
+      <section class="screen" data-section="E-Catalog Sorgum" data-kind="task" data-next="Jawab pertanyaan" hidden>
+        <p class="ctx-tag">Task 2.2 • Detail Produk</p>
+        <h2 class="task-title">Pemeriksaan Spesifikasi, Harga, & Profil Produsen UMKM</h2>
+        <p class="task-desc">Buka halaman spesifikasi produk. Periksa kelengkapan informasi: varian gramatur, harga, deskripsi gizi, sertifikasi (Halal/BPOM), dan asal produsen.</p>
+        <a href="https://catalog.livinglabs.id" target="_blank" rel="noopener noreferrer" class="open-link">Buka catalog.livinglab.id<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg></a>
+      </section>
+
+      <section class="screen" data-section="E-Catalog Sorgum" hidden>
+        <div class="ctx">
+          <p class="ctx-tag">Task 2.2 • Detail Produk</p>
+          <p class="ctx-title">Pemeriksaan Spesifikasi, Harga, & Profil Produsen UMKM</p>
+        </div>
+        <h2 class="q" id="q-status_2_2">Status Keberhasilan</h2>
+        <select id="status_2_2">
+                    <option value="Berhasil Mandiri (Success)">Berhasil Mandiri (Tanpa Bantuan)</option>
+                    <option value="Berhasil dengan Kendala (Partial)">Berhasil dengan Kendala / Bantuan</option>
+                    <option value="Gagal (Failed)">Gagal Menyelesaikan</option>
+                    <option value="Dilewati (Skipped)">Dilewati / Tidak Diuji</option>
+                  </select>
+      </section>
+
+      <section class="screen" data-section="E-Catalog Sorgum" hidden>
+        <div class="ctx">
+          <p class="ctx-tag">Task 2.2 • Detail Produk</p>
+          <p class="ctx-title">Pemeriksaan Spesifikasi, Harga, & Profil Produsen UMKM</p>
+        </div>
+        <h2 class="q" id="q-seq_2_2">Skor SEQ (1-7)</h2>
+        <select id="seq_2_2">
+                      <option value="7">7 - Sangat Mudah</option>
+                      <option value="6">6 - Mudah</option>
+                      <option value="5" selected>5 - Cukup Mudah</option>
+                      <option value="4">4 - Netral</option>
+                      <option value="3">3 - Cukup Sulit</option>
+                      <option value="2">2 - Sulit</option>
+                      <option value="1">1 - Sangat Sulit</option>
+                    </select>
+      </section>
+
+      <section class="screen" data-section="E-Catalog Sorgum" hidden>
+        <div class="ctx">
+          <p class="ctx-tag">Task 2.2 • Detail Produk</p>
+          <p class="ctx-title">Pemeriksaan Spesifikasi, Harga, & Profil Produsen UMKM</p>
+        </div>
+        <label class="q" for="notes_2_2">Catatan Kendala & Temuan UX</label>
+        <textarea class="field" id="notes_2_2" rows="2" placeholder="Catatan halaman detail produk..."></textarea>
+        <p class="hint">Boleh dikosongkan.</p>
+      </section>
+
+      <section class="screen" data-section="E-Catalog Sorgum" data-kind="task" data-next="Jawab pertanyaan" hidden>
+        <p class="ctx-tag">Task 2.3 • Pemesanan WhatsApp</p>
+        <h2 class="task-title">Uji Tombol Order Cepat Langsung ke Kontak WhatsApp Penjual</h2>
+        <p class="task-desc">Tekan tombol aksi pesan via WhatsApp. Periksa apakah sistem otomatis membuka chat WA dengan format pesan pemesanan yang rapi.</p>
+        <a href="https://catalog.livinglabs.id" target="_blank" rel="noopener noreferrer" class="open-link">Buka catalog.livinglab.id<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg></a>
+      </section>
+
+      <section class="screen" data-section="E-Catalog Sorgum" hidden>
+        <div class="ctx">
+          <p class="ctx-tag">Task 2.3 • Pemesanan WhatsApp</p>
+          <p class="ctx-title">Uji Tombol Order Cepat Langsung ke Kontak WhatsApp Penjual</p>
+        </div>
+        <h2 class="q" id="q-status_2_3">Status Keberhasilan</h2>
+        <select id="status_2_3">
+                    <option value="Berhasil Mandiri (Success)">Berhasil Mandiri (Tanpa Bantuan)</option>
+                    <option value="Berhasil dengan Kendala (Partial)">Berhasil dengan Kendala / Bantuan</option>
+                    <option value="Gagal (Failed)">Gagal Menyelesaikan</option>
+                    <option value="Dilewati (Skipped)">Dilewati / Tidak Diuji</option>
+                  </select>
+      </section>
+
+      <section class="screen" data-section="E-Catalog Sorgum" hidden>
+        <div class="ctx">
+          <p class="ctx-tag">Task 2.3 • Pemesanan WhatsApp</p>
+          <p class="ctx-title">Uji Tombol Order Cepat Langsung ke Kontak WhatsApp Penjual</p>
+        </div>
+        <h2 class="q" id="q-seq_2_3">Skor SEQ (1-7)</h2>
+        <select id="seq_2_3">
+                      <option value="7">7 - Sangat Mudah</option>
+                      <option value="6">6 - Mudah</option>
+                      <option value="5" selected>5 - Cukup Mudah</option>
+                      <option value="4">4 - Netral</option>
+                      <option value="3">3 - Cukup Sulit</option>
+                      <option value="2">2 - Sulit</option>
+                      <option value="1">1 - Sangat Sulit</option>
+                    </select>
+      </section>
+
+      <section class="screen" data-section="E-Catalog Sorgum" hidden>
+        <div class="ctx">
+          <p class="ctx-tag">Task 2.3 • Pemesanan WhatsApp</p>
+          <p class="ctx-title">Uji Tombol Order Cepat Langsung ke Kontak WhatsApp Penjual</p>
+        </div>
+        <label class="q" for="notes_2_3">Catatan Kendala & Temuan UX</label>
+        <textarea class="field" id="notes_2_3" rows="2" placeholder="Catatan integrasi pemesanan WA..."></textarea>
+        <p class="hint">Boleh dikosongkan.</p>
+      </section>
+
+      <section class="screen" data-section="E-Catalog Sorgum" data-kind="task" data-next="Jawab pertanyaan" hidden>
+        <p class="ctx-tag">Task 2.4 • Lacak Pengiriman</p>
+        <h2 class="task-title">Penelusuran Nomor Resi & Status Ekspedisi Pesanan</h2>
+        <p class="task-desc">Temukan menu atau input pelacakan pesanan (tracking order) dan coba masukkan nomor resi dummy/contoh untuk melihat status timeline kurir.</p>
+        <a href="https://catalog.livinglabs.id" target="_blank" rel="noopener noreferrer" class="open-link">Buka catalog.livinglab.id<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg></a>
+      </section>
+
+      <section class="screen" data-section="E-Catalog Sorgum" hidden>
+        <div class="ctx">
+          <p class="ctx-tag">Task 2.4 • Lacak Pengiriman</p>
+          <p class="ctx-title">Penelusuran Nomor Resi & Status Ekspedisi Pesanan</p>
+        </div>
+        <h2 class="q" id="q-status_2_4">Status Keberhasilan</h2>
+        <select id="status_2_4">
+                    <option value="Berhasil Mandiri (Success)">Berhasil Mandiri (Tanpa Bantuan)</option>
+                    <option value="Berhasil dengan Kendala (Partial)">Berhasil dengan Kendala / Bantuan</option>
+                    <option value="Gagal (Failed)">Gagal Menyelesaikan</option>
+                    <option value="Dilewati (Skipped)">Dilewati / Tidak Diuji</option>
+                  </select>
+      </section>
+
+      <section class="screen" data-section="E-Catalog Sorgum" hidden>
+        <div class="ctx">
+          <p class="ctx-tag">Task 2.4 • Lacak Pengiriman</p>
+          <p class="ctx-title">Penelusuran Nomor Resi & Status Ekspedisi Pesanan</p>
+        </div>
+        <h2 class="q" id="q-seq_2_4">Skor SEQ (1-7)</h2>
+        <select id="seq_2_4">
+                      <option value="7">7 - Sangat Mudah</option>
+                      <option value="6">6 - Mudah</option>
+                      <option value="5" selected>5 - Cukup Mudah</option>
+                      <option value="4">4 - Netral</option>
+                      <option value="3">3 - Cukup Sulit</option>
+                      <option value="2">2 - Sulit</option>
+                      <option value="1">1 - Sangat Sulit</option>
+                    </select>
+      </section>
+
+      <section class="screen" data-section="E-Catalog Sorgum" hidden>
+        <div class="ctx">
+          <p class="ctx-tag">Task 2.4 • Lacak Pengiriman</p>
+          <p class="ctx-title">Penelusuran Nomor Resi & Status Ekspedisi Pesanan</p>
+        </div>
+        <label class="q" for="notes_2_4">Catatan Kendala & Temuan UX</label>
+        <textarea class="field" id="notes_2_4" rows="2" placeholder="Catatan pelacakan paket..."></textarea>
+        <p class="hint">Boleh dikosongkan.</p>
+      </section>
+
+      <section class="screen" data-section="E-Catalog Sorgum" data-kind="module" data-module="E-Catalog Sorgum" hidden>
+        <h2 class="q">Kirim hasil E-Catalog Sorgum</h2>
+        <div class="avg"><span>Rata-rata kemudahan (SEQ)</span><b class="js-avg">-</b></div>
+        <ul class="legend">
+          <li><span class="dot" data-tone="ok"></span>Berhasil mandiri <b data-count="ok">0</b></li>
+          <li><span class="dot" data-tone="partial"></span>Dengan kendala <b data-count="partial">0</b></li>
+          <li><span class="dot" data-tone="fail"></span>Gagal <b data-count="fail">0</b></li>
+          <li><span class="dot" data-tone="skip"></span>Dilewati <b data-count="skip">0</b></li>
+        </ul>
+        <button type="button" class="btn btn-quiet js-preview">Lihat pratinjau .md</button>
+        <p class="hint">Ketuk sebuah tugas untuk mengubah jawabannya.</p>
+        <ul class="task-list js-tasks"></ul>
+        <p class="sent-note" hidden>Modul ini sudah dikirim. Mengirim lagi akan menyimpan data baru.</p>
+      </section>
+
+      <section class="screen" data-section="SCM Sorgum" data-kind="app" data-next="Mulai tugas" hidden>
+        <h2 class="q">Aplikasi 3: SCM Sorgum</h2>
+        <p class="lead">5 Skenario Rantai Pasok & Traceability</p>
+        <p class="hint">5 Task</p>
+        <a href="https://scm.livinglabs.id" target="_blank" rel="noopener noreferrer" class="btn btn-quiet app-open"><span>Buka scm.livinglabs.id</span><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg></a>
+      </section>
+
+      <section class="screen" data-section="SCM Sorgum" data-kind="task" data-next="Jawab pertanyaan" hidden>
+        <p class="ctx-tag">Task 3.1 • Lahan & Tanam</p>
+        <h2 class="task-title">Registrasi Data Petani, Luas Blok Lahan, & Masa Tanam</h2>
+        <p class="task-desc">Akses modul Lahan & Tanam untuk melihat daftar petak sawah/ladang sorgum, varietas yang ditanam (Bioguma/Suri), dan jadwal penanaman.</p>
+        <a href="https://scm.livinglabs.id" target="_blank" rel="noopener noreferrer" class="open-link">Buka scm.livinglabs.id<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg></a>
+      </section>
+
+      <section class="screen" data-section="SCM Sorgum" hidden>
+        <div class="ctx">
+          <p class="ctx-tag">Task 3.1 • Lahan & Tanam</p>
+          <p class="ctx-title">Registrasi Data Petani, Luas Blok Lahan, & Masa Tanam</p>
+        </div>
+        <h2 class="q" id="q-status_3_1">Status Keberhasilan</h2>
+        <select id="status_3_1">
+                    <option value="Berhasil Mandiri (Success)">Berhasil Mandiri (Tanpa Bantuan)</option>
+                    <option value="Berhasil dengan Kendala (Partial)">Berhasil dengan Kendala / Bantuan</option>
+                    <option value="Gagal (Failed)">Gagal Menyelesaikan</option>
+                    <option value="Dilewati (Skipped)">Dilewati / Tidak Diuji</option>
+                  </select>
+      </section>
+
+      <section class="screen" data-section="SCM Sorgum" hidden>
+        <div class="ctx">
+          <p class="ctx-tag">Task 3.1 • Lahan & Tanam</p>
+          <p class="ctx-title">Registrasi Data Petani, Luas Blok Lahan, & Masa Tanam</p>
+        </div>
+        <h2 class="q" id="q-seq_3_1">Skor SEQ (1-7)</h2>
+        <select id="seq_3_1">
+                      <option value="7">7 - Sangat Mudah</option>
+                      <option value="6">6 - Mudah</option>
+                      <option value="5" selected>5 - Cukup Mudah</option>
+                      <option value="4">4 - Netral</option>
+                      <option value="3">3 - Cukup Sulit</option>
+                      <option value="2">2 - Sulit</option>
+                      <option value="1">1 - Sangat Sulit</option>
+                    </select>
+      </section>
+
+      <section class="screen" data-section="SCM Sorgum" hidden>
+        <div class="ctx">
+          <p class="ctx-tag">Task 3.1 • Lahan & Tanam</p>
+          <p class="ctx-title">Registrasi Data Petani, Luas Blok Lahan, & Masa Tanam</p>
+        </div>
+        <label class="q" for="notes_3_1">Catatan Kendala & Temuan UX</label>
+        <textarea class="field" id="notes_3_1" rows="2" placeholder="Catatan modul penanaman..."></textarea>
+        <p class="hint">Boleh dikosongkan.</p>
+      </section>
+
+      <section class="screen" data-section="SCM Sorgum" data-kind="task" data-next="Jawab pertanyaan" hidden>
+        <p class="ctx-tag">Task 3.2 • Panen Sorgum</p>
+        <h2 class="task-title">Pencatatan Hasil Panen, Bobot Tonase, & Kadar Air</h2>
+        <p class="task-desc">Periksa formulir atau rekap panen petani. Identifikasi input data tonase basah/kering, kualitas bulir sorgum, dan tanggal panen aktual.</p>
+        <a href="https://scm.livinglabs.id" target="_blank" rel="noopener noreferrer" class="open-link">Buka scm.livinglabs.id<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg></a>
+      </section>
+
+      <section class="screen" data-section="SCM Sorgum" hidden>
+        <div class="ctx">
+          <p class="ctx-tag">Task 3.2 • Panen Sorgum</p>
+          <p class="ctx-title">Pencatatan Hasil Panen, Bobot Tonase, & Kadar Air</p>
+        </div>
+        <h2 class="q" id="q-status_3_2">Status Keberhasilan</h2>
+        <select id="status_3_2">
+                    <option value="Berhasil Mandiri (Success)">Berhasil Mandiri (Tanpa Bantuan)</option>
+                    <option value="Berhasil dengan Kendala (Partial)">Berhasil dengan Kendala / Bantuan</option>
+                    <option value="Gagal (Failed)">Gagal Menyelesaikan</option>
+                    <option value="Dilewati (Skipped)">Dilewati / Tidak Diuji</option>
+                  </select>
+      </section>
+
+      <section class="screen" data-section="SCM Sorgum" hidden>
+        <div class="ctx">
+          <p class="ctx-tag">Task 3.2 • Panen Sorgum</p>
+          <p class="ctx-title">Pencatatan Hasil Panen, Bobot Tonase, & Kadar Air</p>
+        </div>
+        <h2 class="q" id="q-seq_3_2">Skor SEQ (1-7)</h2>
+        <select id="seq_3_2">
+                      <option value="7">7 - Sangat Mudah</option>
+                      <option value="6">6 - Mudah</option>
+                      <option value="5" selected>5 - Cukup Mudah</option>
+                      <option value="4">4 - Netral</option>
+                      <option value="3">3 - Cukup Sulit</option>
+                      <option value="2">2 - Sulit</option>
+                      <option value="1">1 - Sangat Sulit</option>
+                    </select>
+      </section>
+
+      <section class="screen" data-section="SCM Sorgum" hidden>
+        <div class="ctx">
+          <p class="ctx-tag">Task 3.2 • Panen Sorgum</p>
+          <p class="ctx-title">Pencatatan Hasil Panen, Bobot Tonase, & Kadar Air</p>
+        </div>
+        <label class="q" for="notes_3_2">Catatan Kendala & Temuan UX</label>
+        <textarea class="field" id="notes_3_2" rows="2" placeholder="Catatan modul panen..."></textarea>
+        <p class="hint">Boleh dikosongkan.</p>
+      </section>
+
+      <section class="screen" data-section="SCM Sorgum" data-kind="task" data-next="Jawab pertanyaan" hidden>
+        <p class="ctx-tag">Task 3.3 • Gudang / Stok</p>
+        <h2 class="task-title">Manajemen Persediaan Gudang (Inbound & Outbound Stock)</h2>
+        <p class="task-desc">Navigasi ke menu inventory gudang untuk memeriksa stok biji sorgum yang tersedia, kapasitas silo, dan log keluar-masuk barang.</p>
+        <a href="https://scm.livinglabs.id" target="_blank" rel="noopener noreferrer" class="open-link">Buka scm.livinglabs.id<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg></a>
+      </section>
+
+      <section class="screen" data-section="SCM Sorgum" hidden>
+        <div class="ctx">
+          <p class="ctx-tag">Task 3.3 • Gudang / Stok</p>
+          <p class="ctx-title">Manajemen Persediaan Gudang (Inbound & Outbound Stock)</p>
+        </div>
+        <h2 class="q" id="q-status_3_3">Status Keberhasilan</h2>
+        <select id="status_3_3">
+                    <option value="Berhasil Mandiri (Success)">Berhasil Mandiri (Tanpa Bantuan)</option>
+                    <option value="Berhasil dengan Kendala (Partial)">Berhasil dengan Kendala / Bantuan</option>
+                    <option value="Gagal (Failed)">Gagal Menyelesaikan</option>
+                    <option value="Dilewati (Skipped)">Dilewati / Tidak Diuji</option>
+                  </select>
+      </section>
+
+      <section class="screen" data-section="SCM Sorgum" hidden>
+        <div class="ctx">
+          <p class="ctx-tag">Task 3.3 • Gudang / Stok</p>
+          <p class="ctx-title">Manajemen Persediaan Gudang (Inbound & Outbound Stock)</p>
+        </div>
+        <h2 class="q" id="q-seq_3_3">Skor SEQ (1-7)</h2>
+        <select id="seq_3_3">
+                      <option value="7">7 - Sangat Mudah</option>
+                      <option value="6">6 - Mudah</option>
+                      <option value="5" selected>5 - Cukup Mudah</option>
+                      <option value="4">4 - Netral</option>
+                      <option value="3">3 - Cukup Sulit</option>
+                      <option value="2">2 - Sulit</option>
+                      <option value="1">1 - Sangat Sulit</option>
+                    </select>
+      </section>
+
+      <section class="screen" data-section="SCM Sorgum" hidden>
+        <div class="ctx">
+          <p class="ctx-tag">Task 3.3 • Gudang / Stok</p>
+          <p class="ctx-title">Manajemen Persediaan Gudang (Inbound & Outbound Stock)</p>
+        </div>
+        <label class="q" for="notes_3_3">Catatan Kendala & Temuan UX</label>
+        <textarea class="field" id="notes_3_3" rows="2" placeholder="Catatan modul gudang..."></textarea>
+        <p class="hint">Boleh dikosongkan.</p>
+      </section>
+
+      <section class="screen" data-section="SCM Sorgum" data-kind="task" data-next="Jawab pertanyaan" hidden>
+        <p class="ctx-tag">Task 3.4 • Produksi Sorgum</p>
+        <h2 class="task-title">Pencatatan Konversi Bahan Mentah ke Produk Olahan</h2>
+        <p class="task-desc">Telusuri alur kerja produksi (pemrosesan perontokan, penepungan, atau penyosohan biji sorgum) serta rendemen hasil olahan.</p>
+        <a href="https://scm.livinglabs.id" target="_blank" rel="noopener noreferrer" class="open-link">Buka scm.livinglabs.id<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg></a>
+      </section>
+
+      <section class="screen" data-section="SCM Sorgum" hidden>
+        <div class="ctx">
+          <p class="ctx-tag">Task 3.4 • Produksi Sorgum</p>
+          <p class="ctx-title">Pencatatan Konversi Bahan Mentah ke Produk Olahan</p>
+        </div>
+        <h2 class="q" id="q-status_3_4">Status Keberhasilan</h2>
+        <select id="status_3_4">
+                    <option value="Berhasil Mandiri (Success)">Berhasil Mandiri (Tanpa Bantuan)</option>
+                    <option value="Berhasil dengan Kendala (Partial)">Berhasil dengan Kendala / Bantuan</option>
+                    <option value="Gagal (Failed)">Gagal Menyelesaikan</option>
+                    <option value="Dilewati (Skipped)">Dilewati / Tidak Diuji</option>
+                  </select>
+      </section>
+
+      <section class="screen" data-section="SCM Sorgum" hidden>
+        <div class="ctx">
+          <p class="ctx-tag">Task 3.4 • Produksi Sorgum</p>
+          <p class="ctx-title">Pencatatan Konversi Bahan Mentah ke Produk Olahan</p>
+        </div>
+        <h2 class="q" id="q-seq_3_4">Skor SEQ (1-7)</h2>
+        <select id="seq_3_4">
+                      <option value="7">7 - Sangat Mudah</option>
+                      <option value="6">6 - Mudah</option>
+                      <option value="5" selected>5 - Cukup Mudah</option>
+                      <option value="4">4 - Netral</option>
+                      <option value="3">3 - Cukup Sulit</option>
+                      <option value="2">2 - Sulit</option>
+                      <option value="1">1 - Sangat Sulit</option>
+                    </select>
+      </section>
+
+      <section class="screen" data-section="SCM Sorgum" hidden>
+        <div class="ctx">
+          <p class="ctx-tag">Task 3.4 • Produksi Sorgum</p>
+          <p class="ctx-title">Pencatatan Konversi Bahan Mentah ke Produk Olahan</p>
+        </div>
+        <label class="q" for="notes_3_4">Catatan Kendala & Temuan UX</label>
+        <textarea class="field" id="notes_3_4" rows="2" placeholder="Catatan modul produksi..."></textarea>
+        <p class="hint">Boleh dikosongkan.</p>
+      </section>
+
+      <section class="screen" data-section="SCM Sorgum" data-kind="task" data-next="Jawab pertanyaan" hidden>
+        <p class="ctx-tag">Task 3.5 • Lacak Batch Produk</p>
+        <h2 class="task-title">Penelusuran Traceability (Dari Kemasan hingga Lahan Asal)</h2>
+        <p class="task-desc">Uji fitur pelacakan batch id / QR traceability code untuk memverifikasi asal kelompok tani, tanggal panen, dan sertifikasi mutu.</p>
+        <a href="https://scm.livinglabs.id" target="_blank" rel="noopener noreferrer" class="open-link">Buka scm.livinglabs.id<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg></a>
+      </section>
+
+      <section class="screen" data-section="SCM Sorgum" hidden>
+        <div class="ctx">
+          <p class="ctx-tag">Task 3.5 • Lacak Batch Produk</p>
+          <p class="ctx-title">Penelusuran Traceability (Dari Kemasan hingga Lahan Asal)</p>
+        </div>
+        <h2 class="q" id="q-status_3_5">Status Keberhasilan</h2>
+        <select id="status_3_5">
+                    <option value="Berhasil Mandiri (Success)">Berhasil Mandiri (Tanpa Bantuan)</option>
+                    <option value="Berhasil dengan Kendala (Partial)">Berhasil dengan Kendala / Bantuan</option>
+                    <option value="Gagal (Failed)">Gagal Menyelesaikan</option>
+                    <option value="Dilewati (Skipped)">Dilewati / Tidak Diuji</option>
+                  </select>
+      </section>
+
+      <section class="screen" data-section="SCM Sorgum" hidden>
+        <div class="ctx">
+          <p class="ctx-tag">Task 3.5 • Lacak Batch Produk</p>
+          <p class="ctx-title">Penelusuran Traceability (Dari Kemasan hingga Lahan Asal)</p>
+        </div>
+        <h2 class="q" id="q-seq_3_5">Skor SEQ (1-7)</h2>
+        <select id="seq_3_5">
+                      <option value="7">7 - Sangat Mudah</option>
+                      <option value="6">6 - Mudah</option>
+                      <option value="5" selected>5 - Cukup Mudah</option>
+                      <option value="4">4 - Netral</option>
+                      <option value="3">3 - Cukup Sulit</option>
+                      <option value="2">2 - Sulit</option>
+                      <option value="1">1 - Sangat Sulit</option>
+                    </select>
+      </section>
+
+      <section class="screen" data-section="SCM Sorgum" hidden>
+        <div class="ctx">
+          <p class="ctx-tag">Task 3.5 • Lacak Batch Produk</p>
+          <p class="ctx-title">Penelusuran Traceability (Dari Kemasan hingga Lahan Asal)</p>
+        </div>
+        <label class="q" for="notes_3_5">Catatan Kendala & Temuan UX</label>
+        <textarea class="field" id="notes_3_5" rows="2" placeholder="Catatan modul traceability batch..."></textarea>
+        <p class="hint">Boleh dikosongkan.</p>
+      </section>
+
+      <section class="screen" data-section="SCM Sorgum" data-kind="module" data-module="SCM Sorgum" hidden>
+        <h2 class="q">Kirim hasil SCM Sorgum</h2>
+        <div class="avg"><span>Rata-rata kemudahan (SEQ)</span><b class="js-avg">-</b></div>
+        <ul class="legend">
+          <li><span class="dot" data-tone="ok"></span>Berhasil mandiri <b data-count="ok">0</b></li>
+          <li><span class="dot" data-tone="partial"></span>Dengan kendala <b data-count="partial">0</b></li>
+          <li><span class="dot" data-tone="fail"></span>Gagal <b data-count="fail">0</b></li>
+          <li><span class="dot" data-tone="skip"></span>Dilewati <b data-count="skip">0</b></li>
+        </ul>
+        <button type="button" class="btn btn-quiet js-preview">Lihat pratinjau .md</button>
+        <p class="hint">Ketuk sebuah tugas untuk mengubah jawabannya.</p>
+        <ul class="task-list js-tasks"></ul>
+        <p class="sent-note" hidden>Modul ini sudah dikirim. Mengirim lagi akan menyimpan data baru.</p>
+      </section>
+
+      <section class="screen" data-section="Community Sorgum" data-kind="app" data-next="Mulai tugas" hidden>
+        <h2 class="q">Aplikasi 4: Community Sorgum</h2>
+        <p class="lead">3 Skenario Edukasi, Event, & Forum</p>
+        <p class="hint">3 Task</p>
+        <a href="https://community.livinglabs.id/" target="_blank" rel="noopener noreferrer" class="btn btn-quiet app-open"><span>Buka community.livinglabs.id</span><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg></a>
+      </section>
+
+      <section class="screen" data-section="Community Sorgum" data-kind="task" data-next="Jawab pertanyaan" hidden>
+        <p class="ctx-tag">Task 4.1 • Artikel</p>
+        <h2 class="task-title">Eksplorasi Artikel Budidaya & Tips Pengolahan Sorgum</h2>
+        <p class="task-desc">Buka direktori artikel ilmiah/populer, cari topik teknis (misal: penanganan hama sorgum atau olahan pangan), dan evaluasi kenyamanan membaca.</p>
+        <a href="https://community.livinglabs.id/" target="_blank" rel="noopener noreferrer" class="open-link">Buka community.livinglabs.id<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg></a>
+      </section>
+
+      <section class="screen" data-section="Community Sorgum" hidden>
+        <div class="ctx">
+          <p class="ctx-tag">Task 4.1 • Artikel</p>
+          <p class="ctx-title">Eksplorasi Artikel Budidaya & Tips Pengolahan Sorgum</p>
+        </div>
+        <h2 class="q" id="q-status_4_1">Status Keberhasilan</h2>
+        <select id="status_4_1">
+                    <option value="Berhasil Mandiri (Success)">Berhasil Mandiri (Tanpa Bantuan)</option>
+                    <option value="Berhasil dengan Kendala (Partial)">Berhasil dengan Kendala / Bantuan</option>
+                    <option value="Gagal (Failed)">Gagal Menyelesaikan</option>
+                    <option value="Dilewati (Skipped)">Dilewati / Tidak Diuji</option>
+                  </select>
+      </section>
+
+      <section class="screen" data-section="Community Sorgum" hidden>
+        <div class="ctx">
+          <p class="ctx-tag">Task 4.1 • Artikel</p>
+          <p class="ctx-title">Eksplorasi Artikel Budidaya & Tips Pengolahan Sorgum</p>
+        </div>
+        <h2 class="q" id="q-seq_4_1">Skor SEQ (1-7)</h2>
+        <select id="seq_4_1">
+                      <option value="7">7 - Sangat Mudah</option>
+                      <option value="6">6 - Mudah</option>
+                      <option value="5" selected>5 - Cukup Mudah</option>
+                      <option value="4">4 - Netral</option>
+                      <option value="3">3 - Cukup Sulit</option>
+                      <option value="2">2 - Sulit</option>
+                      <option value="1">1 - Sangat Sulit</option>
+                    </select>
+      </section>
+
+      <section class="screen" data-section="Community Sorgum" hidden>
+        <div class="ctx">
+          <p class="ctx-tag">Task 4.1 • Artikel</p>
+          <p class="ctx-title">Eksplorasi Artikel Budidaya & Tips Pengolahan Sorgum</p>
+        </div>
+        <label class="q" for="notes_4_1">Catatan Kendala & Temuan UX</label>
+        <textarea class="field" id="notes_4_1" rows="2" placeholder="Catatan modul artikel..."></textarea>
+        <p class="hint">Boleh dikosongkan.</p>
+      </section>
+
+      <section class="screen" data-section="Community Sorgum" data-kind="task" data-next="Jawab pertanyaan" hidden>
+        <p class="ctx-tag">Task 4.2 • Informasi Event</p>
+        <h2 class="task-title">Pengecekan Kalender & Informasi Event Komunitas</h2>
+        <p class="task-desc">Buka menu agenda/event untuk memeriksa informasi penyelenggaraan event komunitas sorgum (jadwal festival panen, pameran produk, atau expo).</p>
+        <a href="https://community.livinglabs.id/" target="_blank" rel="noopener noreferrer" class="open-link">Buka community.livinglabs.id<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg></a>
+      </section>
+
+      <section class="screen" data-section="Community Sorgum" hidden>
+        <div class="ctx">
+          <p class="ctx-tag">Task 4.2 • Informasi Event</p>
+          <p class="ctx-title">Pengecekan Kalender & Informasi Event Komunitas</p>
+        </div>
+        <h2 class="q" id="q-status_4_2">Status Keberhasilan</h2>
+        <select id="status_4_2">
+                    <option value="Berhasil Mandiri (Success)">Berhasil Mandiri (Tanpa Bantuan)</option>
+                    <option value="Berhasil dengan Kendala (Partial)">Berhasil dengan Kendala / Bantuan</option>
+                    <option value="Gagal (Failed)">Gagal Menyelesaikan</option>
+                    <option value="Dilewati (Skipped)">Dilewati / Tidak Diuji</option>
+                  </select>
+      </section>
+
+      <section class="screen" data-section="Community Sorgum" hidden>
+        <div class="ctx">
+          <p class="ctx-tag">Task 4.2 • Informasi Event</p>
+          <p class="ctx-title">Pengecekan Kalender & Informasi Event Komunitas</p>
+        </div>
+        <h2 class="q" id="q-seq_4_2">Skor SEQ (1-7)</h2>
+        <select id="seq_4_2">
+                      <option value="7">7 - Sangat Mudah</option>
+                      <option value="6">6 - Mudah</option>
+                      <option value="5" selected>5 - Cukup Mudah</option>
+                      <option value="4">4 - Netral</option>
+                      <option value="3">3 - Cukup Sulit</option>
+                      <option value="2">2 - Sulit</option>
+                      <option value="1">1 - Sangat Sulit</option>
+                    </select>
+      </section>
+
+      <section class="screen" data-section="Community Sorgum" hidden>
+        <div class="ctx">
+          <p class="ctx-tag">Task 4.2 • Informasi Event</p>
+          <p class="ctx-title">Pengecekan Kalender & Informasi Event Komunitas</p>
+        </div>
+        <label class="q" for="notes_4_2">Catatan Kendala & Temuan UX</label>
+        <textarea class="field" id="notes_4_2" rows="2" placeholder="Catatan modul informasi event..."></textarea>
+        <p class="hint">Boleh dikosongkan.</p>
+      </section>
+
+      <section class="screen" data-section="Community Sorgum" data-kind="task" data-next="Jawab pertanyaan" hidden>
+        <p class="ctx-tag">Task 4.3 • Forum Diskusi</p>
+        <h2 class="task-title">Interaksi Diskusi Komunitas (Thread, Komentar, & Tanya Jawab)</h2>
+        <p class="task-desc">Eksplorasi thread tanya jawab petani/ahli, periksa alur pembuatan postingan baru, dan respons interaksi (like/balas komentar).</p>
+        <a href="https://community.livinglabs.id/" target="_blank" rel="noopener noreferrer" class="open-link">Buka community.livinglabs.id<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg></a>
+      </section>
+
+      <section class="screen" data-section="Community Sorgum" hidden>
+        <div class="ctx">
+          <p class="ctx-tag">Task 4.3 • Forum Diskusi</p>
+          <p class="ctx-title">Interaksi Diskusi Komunitas (Thread, Komentar, & Tanya Jawab)</p>
+        </div>
+        <h2 class="q" id="q-status_4_3">Status Keberhasilan</h2>
+        <select id="status_4_3">
+                    <option value="Berhasil Mandiri (Success)">Berhasil Mandiri (Tanpa Bantuan)</option>
+                    <option value="Berhasil dengan Kendala (Partial)">Berhasil dengan Kendala / Bantuan</option>
+                    <option value="Gagal (Failed)">Gagal Menyelesaikan</option>
+                    <option value="Dilewati (Skipped)">Dilewati / Tidak Diuji</option>
+                  </select>
+      </section>
+
+      <section class="screen" data-section="Community Sorgum" hidden>
+        <div class="ctx">
+          <p class="ctx-tag">Task 4.3 • Forum Diskusi</p>
+          <p class="ctx-title">Interaksi Diskusi Komunitas (Thread, Komentar, & Tanya Jawab)</p>
+        </div>
+        <h2 class="q" id="q-seq_4_3">Skor SEQ (1-7)</h2>
+        <select id="seq_4_3">
+                      <option value="7">7 - Sangat Mudah</option>
+                      <option value="6">6 - Mudah</option>
+                      <option value="5" selected>5 - Cukup Mudah</option>
+                      <option value="4">4 - Netral</option>
+                      <option value="3">3 - Cukup Sulit</option>
+                      <option value="2">2 - Sulit</option>
+                      <option value="1">1 - Sangat Sulit</option>
+                    </select>
+      </section>
+
+      <section class="screen" data-section="Community Sorgum" hidden>
+        <div class="ctx">
+          <p class="ctx-tag">Task 4.3 • Forum Diskusi</p>
+          <p class="ctx-title">Interaksi Diskusi Komunitas (Thread, Komentar, & Tanya Jawab)</p>
+        </div>
+        <label class="q" for="notes_4_3">Catatan Kendala & Temuan UX</label>
+        <textarea class="field" id="notes_4_3" rows="2" placeholder="Catatan forum diskusi..."></textarea>
+        <p class="hint">Boleh dikosongkan.</p>
+      </section>
+
+      <section class="screen" data-section="Community Sorgum" data-kind="module" data-module="Community Sorgum" hidden>
+        <h2 class="q">Kirim hasil Community Sorgum</h2>
+        <div class="avg"><span>Rata-rata kemudahan (SEQ)</span><b class="js-avg">-</b></div>
+        <ul class="legend">
+          <li><span class="dot" data-tone="ok"></span>Berhasil mandiri <b data-count="ok">0</b></li>
+          <li><span class="dot" data-tone="partial"></span>Dengan kendala <b data-count="partial">0</b></li>
+          <li><span class="dot" data-tone="fail"></span>Gagal <b data-count="fail">0</b></li>
+          <li><span class="dot" data-tone="skip"></span>Dilewati <b data-count="skip">0</b></li>
+        </ul>
+        <button type="button" class="btn btn-quiet js-preview">Lihat pratinjau .md</button>
+        <p class="hint">Ketuk sebuah tugas untuk mengubah jawabannya.</p>
+        <ul class="task-list js-tasks"></ul>
+        <p class="sent-note" hidden>Modul ini sudah dikirim. Mengirim lagi akan menyimpan data baru.</p>
+      </section>
+
+      <section class="screen" data-section="Evaluasi" hidden>
+        <div class="ctx">
+          <p class="ctx-tag">Evaluasi Sintesis Ekosistem</p>
+          <p class="ctx-title">Keterpaduan IoT → Katalog → SCM → Komunitas</p>
+        </div>
+        <h2 class="q" id="q-consistencyRating">Konsistensi Desain & Navigasi Antar-Platform</h2>
+        <select id="consistencyRating">
+                  <option value="Sangat Selaras & Konsisten">Sangat Selaras & Konsisten (Seragam)</option>
+                  <option value="Cukup Konsisten (Ada perbedaan kecil)">Cukup Konsisten (Ada perbedaan kecil)</option>
+                  <option value="Kurang Konsisten (Terasa seperti sistem terpisah)">Kurang Konsisten (Terasa terpisah)</option>
+                  <option value="Tidak Konsisten Sama Sekali">Tidak Konsisten Sama Sekali</option>
+                </select>
+      </section>
+
+      <section class="screen" data-section="Evaluasi" hidden>
+        <div class="ctx">
+          <p class="ctx-tag">Evaluasi Sintesis Ekosistem</p>
+          <p class="ctx-title">Keterpaduan IoT → Katalog → SCM → Komunitas</p>
+        </div>
+        <label class="q" for="overallFeedback">Rekomendasi Utama & Prioritas Peningkatan UX</label>
+        <textarea class="field" id="overallFeedback" rows="4" placeholder="Misalnya: Buat Single Sign-On (SSO) antar platform, seragamkan navigasi, tambahkan panduan awal..."></textarea>
+      </section>
+
+      <section class="screen" data-section="Evaluasi" data-kind="module" data-module="Evaluasi Ekosistem" hidden>
+        <h2 class="q">Kirim hasil Evaluasi Ekosistem</h2>
+        <p class="lead">Ini modul terakhir. Periksa pratinjau laporannya, lalu kirim.</p>
+        <p class="sent-note" hidden>Modul ini sudah dikirim. Mengirim lagi akan menyimpan data baru.</p>
+        <button type="button" class="btn btn-quiet js-preview">Lihat pratinjau .md</button>
+      </section>
+    </form>
+  </main>
+
+  <div class="bar">
+    <div class="wrap bar-row">
+      <button type="button" id="prevStepBtn" class="btn btn-quiet btn-back" aria-label="Pertanyaan sebelumnya" title="Kembali">
+        <svg fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+      </button>
+      <button type="button" id="nextStepBtn" class="btn"><span id="nextStepBtnText">Mulai</span></button>
+      <button type="button" id="skipModuleBtn" class="btn btn-quiet btn-back" hidden>
+        <svg fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.14.5/dist/sweetalert2.min.js"></script>
+  <script>
+    const form = document.getElementById('usabilityTestForm');
+    const participantNameInput = document.getElementById('participantName');
+    const taskStatusInputs = form.querySelectorAll('select[id^="status_"]');
+    const screens = [...form.querySelectorAll('.screen')];
+    const nameScreen = screens.findIndex(s => s.contains(participantNameInput));
+
+    const prevStepBtn = document.getElementById('prevStepBtn');
+    const nextStepBtn = document.getElementById('nextStepBtn');
+    const nextStepBtnText = document.getElementById('nextStepBtnText');
+    const skipModuleBtn = document.getElementById('skipModuleBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const sectionName = document.getElementById('sectionName');
+    const stepProgressBar = document.getElementById('stepProgressBar');
+
+    let current = 0;
+    // Saat mengubah satu tugas dari layar kirim modul: kembali ke layar itu setelah layar terakhir tugasnya
+    let returnAfter = null;
+    let returnTo = null;
+    // Modul yang sudah terkirim dari perangkat ini
+    let sentModules = {};
+
+    // Dialog, konfirmasi & toast (SweetAlert2)
+    const Dialog = Swal.mixin({
+      confirmButtonColor: '#1C4D31',
+      cancelButtonColor: '#F1F3EC',
+      reverseButtons: true,
+      customClass: { cancelButton: 'swal-btn-muted' }
+    });
+    const Toast = Swal.mixin({
+      toast: true,
+      position: 'bottom',
+      showConfirmButton: false,
+      timer: 3200,
+      timerProgressBar: true
+    });
+
+    function showToast(message, isError = false) {
+      Toast.fire({ icon: isError ? 'error' : 'success', titleText: message });
+    }
+
+    function showScreen(index, dir = 1) {
+      if (index < 0 || index >= screens.length) return;
+      // Nama wajib diisi sebelum lanjut
+      if (index > nameScreen && current <= nameScreen && !participantNameInput.value.trim()) {
+        if (current !== nameScreen) showScreen(nameScreen);
+        showToast('Mohon isi Nama Lengkap Partisipan terlebih dahulu.', true);
+        participantNameInput.focus();
+        return;
+      }
+
+      screens[current].hidden = true;
+      current = index;
+      const screen = screens[current];
+      screen.hidden = false;
+      screen.classList.remove('enter-fwd', 'enter-back');
+      void screen.offsetWidth;
+      screen.classList.add(dir > 0 ? 'enter-fwd' : 'enter-back');
+
+      sectionName.textContent = screen.dataset.section;
+      const pct = Math.round((current / (screens.length - 1)) * 100);
+      stepProgressBar.style.width = `${pct}%`;
+      stepProgressBar.parentElement.setAttribute('aria-valuenow', pct);
+      prevStepBtn.hidden = current === 0;
+
+      const isModule = screen.dataset.kind === 'module';
+      nextStepBtn.classList.toggle('is-send', isModule);
+      nextStepBtnText.textContent = isModule ? 'Kirim hasil'
+        : current === returnAfter ? 'Kembali ke ringkasan'
+        : screen.dataset.next || 'Lanjut';
+      if (isModule) updateModuleScreen(screen);
+      // Modul dikerjakan bertahap: tombol › lanjut ke modul berikutnya tanpa mengirim dulu
+      skipModuleBtn.hidden = !isModule || current === screens.length - 1;
+      if (!skipModuleBtn.hidden) {
+        const label = `Lanjut ke ${screens[current + 1].dataset.section} tanpa kirim`;
+        skipModuleBtn.setAttribute('aria-label', label);
+        skipModuleBtn.title = label;
+      }
+
+      window.scrollTo(0, 0);
+      const field = screen.querySelector('input, textarea');
+      if (field && matchMedia('(pointer: fine)').matches) field.focus({ preventScroll: true });
+      saveDraft();
+    }
+
+    function nextScreen() {
+      if (screens[current].dataset.kind === 'module') return submitModule(screens[current]);
+      if (returnAfter !== null && current >= returnAfter) {
+        const to = returnTo;
+        returnAfter = returnTo = null;
+        return showScreen(to);
+      }
+      showScreen(current + 1);
+    }
+
+    prevStepBtn.addEventListener('click', () => showScreen(current - 1, -1));
+    nextStepBtn.addEventListener('click', nextScreen);
+    skipModuleBtn.addEventListener('click', () => showScreen(current + 1));
+
+    // Sanitize: lowercase, alphanumeric and dashes only
+    function slugify(text) {
+      return text.toLowerCase()
+        .replace(/[^a-z0-9]/g, '-')
+        .replace(/-+/g, '-')
+        .replace(/^-|-$/g, '');
+    }
+
+    function getFilename(module) {
+      return `hasil-${slugify(participantNameInput.value.trim()) || 'responden'}-${slugify(module)}.md`;
+    }
+
+    function generateMarkdown(module) {
+      const nama = participantNameInput.value.trim() || 'Responden (Tanpa Nama)';
+      const role = document.getElementById('participantRole').value;
+      const device = document.getElementById('deviceUsed').value;
+      const consistency = document.getElementById('consistencyRating').value;
+      const overall = document.getElementById('overallFeedback').value.trim() || '*(Tidak ada catatan khusus)*';
+
+      const now = new Date();
+      const dateString = now.toLocaleDateString('id-ID', {
+        weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
+        hour: '2-digit', minute: '2-digit'
+      });
+
+      // 17 Task datasets definition matching the updated core features
+      const tasks = [
+        // App 1: Dashboard IoT (5 Features)
+        {
+          id: '1.1',
+          app: 'Dashboard IoT',
+          feature: 'Monitoring Tanah',
+          url: 'https://sorgum.livinglabs.id/',
+          title: 'Pembacaan Metrik Sensor Tanah (Moisture, NPK, pH)',
+          status: document.getElementById('status_1_1').value,
+          seq: document.getElementById('seq_1_1').value,
+          notes: document.getElementById('notes_1_1').value.trim() || '*(Tidak ada kendala)*'
+        },
+        {
+          id: '1.2',
+          app: 'Dashboard IoT',
+          feature: 'Monitoring Cuaca',
+          url: 'https://sorgum.livinglabs.id/',
+          title: 'Pemantauan Cuaca Lingkungan & AWS Sensor',
+          status: document.getElementById('status_1_2').value,
+          seq: document.getElementById('seq_1_2').value,
+          notes: document.getElementById('notes_1_2').value.trim() || '*(Tidak ada kendala)*'
+        },
+        {
+          id: '1.3',
+          app: 'Dashboard IoT',
+          feature: 'Status Kebun',
+          url: 'https://sorgum.livinglabs.id/',
+          title: 'Pemetaan Visual Blok Lahan & Kesehatan Tanaman',
+          status: document.getElementById('status_1_3').value,
+          seq: document.getElementById('seq_1_3').value,
+          notes: document.getElementById('notes_1_3').value.trim() || '*(Tidak ada kendala)*'
+        },
+        {
+          id: '1.4',
+          app: 'Dashboard IoT',
+          feature: 'Notifikasi',
+          url: 'https://sorgum.livinglabs.id/',
+          title: 'Pengecekan Peringatan Dini & Riwayat Alarm (Alerts)',
+          status: document.getElementById('status_1_4').value,
+          seq: document.getElementById('seq_1_4').value,
+          notes: document.getElementById('notes_1_4').value.trim() || '*(Tidak ada kendala)*'
+        },
+        {
+          id: '1.5',
+          app: 'Dashboard IoT',
+          feature: 'Analisis AI',
+          url: 'https://sorgum.livinglabs.id/',
+          title: 'Eksplorasi Wawasan Cerdas & Rekomendasi Tindakan AI',
+          status: document.getElementById('status_1_5').value,
+          seq: document.getElementById('seq_1_5').value,
+          notes: document.getElementById('notes_1_5').value.trim() || '*(Tidak ada kendala)*'
+        },
+        // App 2: E-Catalog (4 Features)
+        {
+          id: '2.1',
+          app: 'E-Catalog Sorgum',
+          feature: 'Lihat / Cari Produk',
+          url: 'https://catalog.livinglab.id',
+          title: 'Eksplorasi Etalase & Pencarian Produk Beras/Tepung',
+          status: document.getElementById('status_2_1').value,
+          seq: document.getElementById('seq_2_1').value,
+          notes: document.getElementById('notes_2_1').value.trim() || '*(Tidak ada kendala)*'
+        },
+        {
+          id: '2.2',
+          app: 'E-Catalog Sorgum',
+          feature: 'Detail Produk',
+          url: 'https://catalog.livinglab.id',
+          title: 'Pemeriksaan Spesifikasi, Harga, & Profil Produsen UMKM',
+          status: document.getElementById('status_2_2').value,
+          seq: document.getElementById('seq_2_2').value,
+          notes: document.getElementById('notes_2_2').value.trim() || '*(Tidak ada kendala)*'
+        },
+        {
+          id: '2.3',
+          app: 'E-Catalog Sorgum',
+          feature: 'Pemesanan WhatsApp',
+          url: 'https://catalog.livinglab.id',
+          title: 'Uji Tombol Order Cepat Langsung ke Kontak WhatsApp Penjual',
+          status: document.getElementById('status_2_3').value,
+          seq: document.getElementById('seq_2_3').value,
+          notes: document.getElementById('notes_2_3').value.trim() || '*(Tidak ada kendala)*'
+        },
+        {
+          id: '2.4',
+          app: 'E-Catalog Sorgum',
+          feature: 'Lacak Pengiriman',
+          url: 'https://catalog.livinglab.id',
+          title: 'Penelusuran Nomor Resi & Status Ekspedisi Pesanan',
+          status: document.getElementById('status_2_4').value,
+          seq: document.getElementById('seq_2_4').value,
+          notes: document.getElementById('notes_2_4').value.trim() || '*(Tidak ada kendala)*'
+        },
+        // App 3: SCM Sorgum (5 Features)
+        {
+          id: '3.1',
+          app: 'SCM Sorgum',
+          feature: 'Lahan & Tanam',
+          url: 'https://scm.livinglabs.id',
+          title: 'Registrasi Data Petani, Luas Blok Lahan, & Masa Tanam',
+          status: document.getElementById('status_3_1').value,
+          seq: document.getElementById('seq_3_1').value,
+          notes: document.getElementById('notes_3_1').value.trim() || '*(Tidak ada kendala)*'
+        },
+        {
+          id: '3.2',
+          app: 'SCM Sorgum',
+          feature: 'Panen Sorgum',
+          url: 'https://scm.livinglabs.id',
+          title: 'Pencatatan Hasil Panen, Bobot Tonase, & Kadar Air',
+          status: document.getElementById('status_3_2').value,
+          seq: document.getElementById('seq_3_2').value,
+          notes: document.getElementById('notes_3_2').value.trim() || '*(Tidak ada kendala)*'
+        },
+        {
+          id: '3.3',
+          app: 'SCM Sorgum',
+          feature: 'Gudang / Stok',
+          url: 'https://scm.livinglabs.id',
+          title: 'Manajemen Persediaan Gudang (Inbound & Outbound Stock)',
+          status: document.getElementById('status_3_3').value,
+          seq: document.getElementById('seq_3_3').value,
+          notes: document.getElementById('notes_3_3').value.trim() || '*(Tidak ada kendala)*'
+        },
+        {
+          id: '3.4',
+          app: 'SCM Sorgum',
+          feature: 'Produksi Sorgum',
+          url: 'https://scm.livinglabs.id',
+          title: 'Pencatatan Konversi Bahan Mentah ke Produk Olahan',
+          status: document.getElementById('status_3_4').value,
+          seq: document.getElementById('seq_3_4').value,
+          notes: document.getElementById('notes_3_4').value.trim() || '*(Tidak ada kendala)*'
+        },
+        {
+          id: '3.5',
+          app: 'SCM Sorgum',
+          feature: 'Lacak Batch Produk',
+          url: 'https://scm.livinglabs.id',
+          title: 'Penelusuran Traceability (Dari Kemasan hingga Lahan Asal)',
+          status: document.getElementById('status_3_5').value,
+          seq: document.getElementById('seq_3_5').value,
+          notes: document.getElementById('notes_3_5').value.trim() || '*(Tidak ada kendala)*'
+        },
+        // App 4: Community Sorgum (3 Features)
+        {
+          id: '4.1',
+          app: 'Community Sorgum',
+          feature: 'Artikel',
+          url: 'https://community.livinglabs.id/',
+          title: 'Eksplorasi Artikel Budidaya & Tips Pengolahan Sorgum',
+          status: document.getElementById('status_4_1').value,
+          seq: document.getElementById('seq_4_1').value,
+          notes: document.getElementById('notes_4_1').value.trim() || '*(Tidak ada kendala)*'
+        },
+        {
+          id: '4.2',
+          app: 'Community Sorgum',
+          feature: 'Informasi Event',
+          url: 'https://community.livinglabs.id/',
+          title: 'Pengecekan Kalender & Informasi Event Komunitas',
+          status: document.getElementById('status_4_2').value,
+          seq: document.getElementById('seq_4_2').value,
+          notes: document.getElementById('notes_4_2').value.trim() || '*(Tidak ada kendala)*'
+        },
+        {
+          id: '4.3',
+          app: 'Community Sorgum',
+          feature: 'Forum Diskusi',
+          url: 'https://community.livinglabs.id/',
+          title: 'Interaksi Diskusi Komunitas (Thread, Komentar, & Tanya Jawab)',
+          status: document.getElementById('status_4_3').value,
+          seq: document.getElementById('seq_4_3').value,
+          notes: document.getElementById('notes_4_3').value.trim() || '*(Tidak ada kendala)*'
+        }
+      ];
+
+      const header = `# Laporan Hasil Usability Testing - Ekosistem Sorgum
+
+**Modul Aplikasi:** ${module}
+**Tanggal Pengujian:** ${dateString}
+**Nama Partisipan:** ${nama}
+**Peran / Latar Belakang:** ${role}
+**Perangkat Uji:** ${device}
+
+---
+`;
+      const footer = `
+---
+*Laporan ini digenerate secara otomatis melalui Form Interaktif Usability Testing Ekosistem Sorgum.*
+`;
+
+      if (module === 'Evaluasi Ekosistem') {
+        return `${header}
+## Evaluasi Keterpaduan & Rekomendasi Ekosistem
+
+- **Konsistensi Desain & Antarmuka Antar-Aplikasi:**
+  ${consistency}
+
+- **Rekomendasi Utama & Prioritas Perbaikan:**
+  ${overall}
+${footer}`;
+      }
+
+      const moduleTasks = tasks.filter(t => t.app === module);
+
+      // Calculate aggregate stats
+      const totalScore = moduleTasks.reduce((sum, t) => sum + parseInt(t.seq, 10), 0);
+      const avgSEQ = (totalScore / moduleTasks.length).toFixed(2);
+      const successCount = moduleTasks.filter(t => t.status.includes('Berhasil Mandiri')).length;
+      const partialCount = moduleTasks.filter(t => t.status.includes('Berhasil dengan Kendala')).length;
+      const failedCount = moduleTasks.filter(t => t.status.includes('Gagal')).length;
+
+      // Generate markdown table rows
+      const tableRows = moduleTasks.map(t =>
+        `| **Task ${t.id}** | ${t.app} | **${t.feature}** | ${t.title} | **${t.seq} / 7** | ${t.status} |`
+      ).join('\n');
+
+      // Generate detailed sections per task
+      const detailedSections = moduleTasks.map(t => `
+#### Task ${t.id}: ${t.title}
+- **Aplikasi & Fitur:** [${t.app}](${t.url}) • **${t.feature}**
+- **Status Keberhasilan:** ${t.status}
+- **Kemudahan (Single Ease Question):** **${t.seq} / 7**
+- **Catatan Hambatan & Temuan UX:**
+  ${t.notes}
+`).join('\n---\n');
+
+      return `${header}
+## 1. Ringkasan Metrik Usability Per Skenario Task
+
+> **Rata-rata Skor Kemudahan (SEQ):** **${avgSEQ} / 7**
+> **Tingkat Penyelesaian:** ${successCount} Berhasil Mandiri, ${partialCount} dengan Kendala, ${failedCount} Gagal (Total ${moduleTasks.length} Task)
+
+| Task ID | Aplikasi | Fitur Utama | Deskripsi Skenario Task | Skor SEQ (1-7) | Status Keberhasilan |
+|:---:|---|---|---|:---:|---|
+${tableRows}
+
+---
+
+## 2. Rincian Evaluasi Kualitatif & Hambatan Tiap Task
+
+${detailedSections}
+${footer}`;
+    }
+
+    // Kirim hasil satu modul ke server (MySQL). Setiap kiriman = baris baru.
+    async function saveToServer(markdown, filename, module) {
+      const res = await fetch('submit.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          submission_id: submissionId,
+          participant_name: participantNameInput.value.trim(),
+          participant_role: document.getElementById('participantRole').value,
+          device: document.getElementById('deviceUsed').value,
+          module,
+          filename,
+          markdown
+        })
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.ok) throw new Error(data.error || `HTTP ${res.status}`);
+      return data;
+    }
+
+    async function submitModule(screen) {
+      const nama = participantNameInput.value.trim();
+      if (!nama) {
+        showScreen(nameScreen, -1);
+        showToast('Silakan isi Nama Partisipan terlebih dahulu.', true);
+        participantNameInput.focus();
+        return;
+      }
+
+      const module = screen.dataset.module;
+      const markdown = generateMarkdown(module);
+      const filename = getFilename(module);
+      const again = Boolean(sentModules[module]);
+      const isLast = current === screens.length - 1;
+
+      const sent = await Dialog.fire({
+        icon: 'question',
+        title: again ? `${module} sudah dikirim` : `Kirim hasil ${module}?`,
+        text: again
+          ? 'Mengirim lagi akan menyimpan data baru tanpa menghapus kiriman sebelumnya.'
+          : `Hasil ${module} milik ${nama} akan disimpan ke server sebagai ${filename}.`,
+        showCancelButton: true,
+        showDenyButton: again,
+        denyButtonText: isLast ? 'Selesai tanpa kirim' : 'Lanjut tanpa kirim',
+        denyButtonColor: '#56645A',
+        confirmButtonText: again ? 'Kirim lagi' : 'Kirim hasil',
+        cancelButtonText: 'Periksa lagi',
+        showLoaderOnConfirm: true,
+        allowOutsideClick: () => !Swal.isLoading(),
+        preConfirm: () => saveToServer(markdown, filename, module)
+          .catch(err => Swal.showValidationMessage(`Gagal mengirim: ${err.message}. Periksa koneksi lalu coba lagi.`))
+      });
+      if (sent.isDenied) return isLast ? finish(nama) : showScreen(current + 1);
+      if (!sent.isConfirmed) return;
+      // ID baru: kiriman berikutnya dari perangkat ini jadi baris baru, tidak menimpa yang ini
+      submissionId = newSubmissionId();
+      sentModules[module] = true;
+      saveDraft();
+
+      if (!isLast) {
+        showToast(`Hasil ${module} terkirim.`);
+        return showScreen(current + 1);
+      }
+      finish(nama);
+    }
+
+    async function finish(nama) {
+      const done = await Dialog.fire({
+        icon: 'success',
+        title: 'Semua modul selesai',
+        text: `Terima kasih, ${nama}. Hasil pengujian sudah tersimpan.`,
+        confirmButtonText: 'Selesai',
+        showDenyButton: true,
+        denyButtonText: 'Mulai responden baru',
+        denyButtonColor: '#7A5410'
+      });
+      if (done.isDenied) resetForm();
+    }
+
+    // Clipboard copy with fallback via execCommand
+    function copyToClipboard(text) {
+      if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(text)
+          .then(() => showToast('Laporan berhasil disalin.'))
+          .catch(() => copyToClipboardFallback(text));
+        return;
+      }
+      copyToClipboardFallback(text);
+    }
+
+    function copyToClipboardFallback(text) {
+      const tempTextArea = document.createElement('textarea');
+      tempTextArea.value = text;
+      tempTextArea.style.position = 'fixed';
+      tempTextArea.style.opacity = '0';
+      document.body.appendChild(tempTextArea);
+      tempTextArea.select();
+      try {
+        document.execCommand('copy');
+        showToast('Laporan berhasil disalin.');
+      } catch (err) {
+        showToast('Gagal menyalin secara otomatis.', true);
+      }
+      document.body.removeChild(tempTextArea);
+    }
+
+    function openPreviewModal(module) {
+      const pre = document.createElement('pre');
+      pre.className = 'md-preview';
+      pre.textContent = generateMarkdown(module);
+      Dialog.fire({
+        title: getFilename(module),
+        html: pre,
+        width: 640,
+        showCancelButton: true,
+        confirmButtonText: 'Salin teks',
+        cancelButtonText: 'Tutup'
+      }).then(r => { if (r.isConfirmed) copyToClipboard(pre.textContent); });
+    }
+
+    form.addEventListener('click', (e) => {
+      const btn = e.target.closest('.js-preview');
+      if (btn) openPreviewModal(btn.closest('.screen').dataset.module);
+    });
+
+    // Enter di input maju ke pertanyaan berikutnya, tidak langsung mengirim
+    form.addEventListener('submit', (e) => e.preventDefault());
+    form.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && e.target.tagName === 'INPUT' && !e.isComposing) {
+        e.preventDefault();
+        nextScreen();
+      }
+    });
+
+    function resetForm() {
+      form.reset();
+      submissionId = newSubmissionId();
+      returnAfter = returnTo = null;
+      sentModules = {};
+      syncAllWidgets();
+      clearDraft();
+      showScreen(0, -1);
+      showToast('Formulir dikosongkan.');
+    }
+
+    resetBtn.addEventListener('click', () => {
+      Dialog.fire({
+        icon: 'warning',
+        title: 'Kosongkan semua isian?',
+        text: 'Semua jawaban di perangkat ini akan dihapus. Tindakan ini tidak dapat dibatalkan.',
+        showCancelButton: true,
+        confirmButtonText: 'Kosongkan',
+        confirmButtonColor: '#B42318',
+        cancelButtonText: 'Batal'
+      }).then(r => { if (r.isConfirmed) resetForm(); });
+    });
+
+    // Tampilan pilihan: <select> asli disembunyikan dan tetap menyimpan nilai,
+    // tombol pilihan / skala hanya mengubah nilainya. Data, id, dan format laporan tidak berubah.
+    const STATUS_TONE = {
+      'Berhasil Mandiri (Success)': 'ok',
+      'Berhasil dengan Kendala (Partial)': 'partial',
+      'Gagal (Failed)': 'fail',
+      'Dilewati (Skipped)': 'skip'
+    };
+
+    let advanceTimer;
+    function enhanceSelect(select) {
+      const isSeq = select.id.startsWith('seq_');
+      const group = document.createElement('div');
+      group.className = isSeq ? 'seq' : 'chips';
+      group.setAttribute('role', 'group');
+      group.setAttribute('aria-labelledby', `q-${select.id}`);
+      group.dataset.for = select.id;
+
+      const options = [...select.options];
+      (isSeq ? options.reverse() : options).forEach(opt => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.dataset.value = opt.value;
+        if (isSeq) {
+          btn.className = 'seq-bar';
+          btn.style.setProperty('--i', Number(opt.value) - 1);
+          btn.textContent = opt.value;
+          btn.setAttribute('aria-label', opt.textContent);
+        } else {
+          btn.className = 'chip';
+          btn.textContent = opt.textContent;
+          if (STATUS_TONE[opt.value]) btn.dataset.tone = STATUS_TONE[opt.value];
+        }
+        btn.addEventListener('click', () => {
+          select.value = opt.value;
+          select.dispatchEvent(new Event('change', { bubbles: true }));
+          // Pilih = jawab: lanjut otomatis ke pertanyaan berikutnya
+          clearTimeout(advanceTimer);
+          advanceTimer = setTimeout(nextScreen, 260);
+        });
+        group.appendChild(btn);
+      });
+
+      select.hidden = true;
+      select.after(group);
+
+      if (isSeq) {
+        const ends = document.createElement('div');
+        ends.className = 'seq-ends';
+        ends.setAttribute('aria-hidden', 'true');
+        const low = document.createElement('span');
+        low.textContent = 'Sangat sulit';
+        const high = document.createElement('span');
+        high.textContent = 'Sangat mudah';
+        ends.append(low, high);
+        const value = document.createElement('p');
+        value.className = 'seq-value';
+        value.setAttribute('aria-live', 'polite');
+        group.after(ends, value);
+      }
+
+      select.addEventListener('change', () => syncWidget(select));
+    }
+
+    function syncWidget(select) {
+      const group = form.querySelector(`[data-for="${select.id}"]`);
+      if (!group) return;
+      const isSeq = group.classList.contains('seq');
+      group.querySelectorAll('button').forEach(btn => {
+        btn.setAttribute('aria-pressed', String(btn.dataset.value === select.value));
+        if (isSeq) btn.classList.toggle('is-filled', Number(btn.dataset.value) <= Number(select.value));
+      });
+      if (isSeq) {
+        const option = select.options[select.selectedIndex];
+        group.parentElement.querySelector('.seq-value').textContent = option ? option.textContent : '';
+      }
+    }
+
+    function syncAllWidgets() {
+      form.querySelectorAll('select').forEach(syncWidget);
+    }
+
+    // Ringkasan modul (rumus sama dengan laporan Markdown). Ketuk tugas untuk mengubah jawabannya.
+    function updateModuleScreen(screen) {
+      screen.querySelector('.sent-note').hidden = !sentModules[screen.dataset.module];
+      const list = screen.querySelector('.js-tasks');
+      if (!list) return; // evaluasi tidak punya tugas
+      const selects = [...taskStatusInputs].filter(s => s.closest('.screen').dataset.section === screen.dataset.module);
+      const seqs = selects.map(s => Number(document.getElementById(s.id.replace('status_', 'seq_')).value));
+      const avg = seqs.reduce((sum, v) => sum + v, 0) / seqs.length;
+      screen.querySelector('.js-avg').textContent = `${avg.toFixed(2)} / 7`;
+      screen.querySelectorAll('[data-count]').forEach(b => {
+        b.textContent = selects.filter(s => STATUS_TONE[s.value] === b.dataset.count).length;
+      });
+      list.replaceChildren(...selects.map((select, i) => {
+        const taskScreen = select.closest('.screen');
+        const li = document.createElement('li');
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'task-row';
+        const dot = document.createElement('span');
+        dot.className = 'dot';
+        dot.dataset.tone = STATUS_TONE[select.value];
+        const name = document.createElement('span');
+        name.textContent = taskScreen.querySelector('.ctx-tag').textContent;
+        const status = document.createElement('span');
+        status.className = 'sr-only';
+        status.textContent = `, ${select.options[select.selectedIndex].textContent}, skor SEQ`;
+        const seq = document.createElement('span');
+        seq.className = 'seqv';
+        seq.textContent = `${seqs[i]} / 7`;
+        btn.append(dot, name, status, seq);
+        btn.addEventListener('click', () => {
+          const start = screens.indexOf(taskScreen);
+          returnTo = screens.indexOf(screen);
+          returnAfter = start + 2; // status, SEQ, catatan
+          showScreen(start, -1);
+        });
+        li.appendChild(btn);
+        return li;
+      }));
+    }
+
+    // Autosave: simpan isian ke localStorage agar tidak hilang saat tab di-reload
+    const DRAFT_KEY = 'sorgum-usability-draft-v1';
+
+    // ID unik per pengisian agar simpan ulang tidak membuat data ganda di server
+    function newSubmissionId() {
+      if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
+      const b = crypto.getRandomValues(new Uint8Array(16));
+      b[6] = (b[6] & 0x0f) | 0x40;
+      b[8] = (b[8] & 0x3f) | 0x80;
+      const hex = [...b].map(x => x.toString(16).padStart(2, '0')).join('');
+      return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
+    }
+    let submissionId = newSubmissionId();
+
+    function saveDraft() {
+      const values = {};
+      form.querySelectorAll('input[id], select[id], textarea[id]').forEach(el => {
+        values[el.id] = el.value;
+      });
+      try {
+        localStorage.setItem(DRAFT_KEY, JSON.stringify({ values, screen: current, submissionId, sentModules }));
+      } catch (err) { /* storage diblokir (mode privat) — form tetap jalan */ }
+    }
+
+    function clearDraft() {
+      try { localStorage.removeItem(DRAFT_KEY); } catch (err) { /* abaikan */ }
+    }
+
+    // Mengembalikan [layar, apakahAdaIsianDipulihkan]
+    function restoreDraft() {
+      let draft;
+      try { draft = JSON.parse(localStorage.getItem(DRAFT_KEY)); } catch (err) { return [0, false]; }
+      if (!draft || !draft.values) return [0, false];
+      if (/^[0-9a-f-]{36}$/i.test(draft.submissionId || '')) submissionId = draft.submissionId;
+      if (draft.sentModules && typeof draft.sentModules === 'object') sentModules = draft.sentModules;
+      Object.entries(draft.values).forEach(([id, value]) => {
+        const el = document.getElementById(id);
+        if (!el || !form.contains(el)) return;
+        // Hanya pulihkan nilai select yang memang ada di opsi
+        if (el.tagName === 'SELECT' && ![...el.options].some(o => o.value === value)) return;
+        el.value = value;
+      });
+      const screen = Number(draft.screen);
+      return [Number.isInteger(screen) && screen < screens.length ? screen : 0, Boolean(draft.values.participantName)];
+    }
+
+    // Keyboard HP tidak boleh menutupi kolom yang sedang diisi
+    // Keyboard dikenali dari layar sentuh ATAU tinggi layar yang menyusut saat kolom aktif
+    // (emulator/simulator HP memakai mouse, jadi pointer saja tidak cukup).
+    const touchScreen = matchMedia('(pointer: coarse)');
+    const viewHeight = () => Math.min(innerHeight, window.visualViewport ? visualViewport.height : innerHeight);
+    const fieldFocused = () => {
+      const el = document.activeElement;
+      return Boolean(el && form.contains(el) && el.matches('input, textarea'));
+    };
+    let fullHeight = viewHeight();
+    function updateTyping() {
+      const h = viewHeight();
+      if (!fieldFocused()) fullHeight = h;
+      const typing = fieldFocused() && (touchScreen.matches || h < fullHeight * 0.8);
+      document.body.classList.toggle('typing', typing);
+      if (typing) requestAnimationFrame(() => document.activeElement.scrollIntoView({ block: 'center' }));
+    }
+    form.addEventListener('focusin', () => {
+      updateTyping();
+      setTimeout(updateTyping, 350); // tunggu animasi keyboard
+    });
+    // Ditunda agar ketukan tombol Lanjut/Kembali tidak meleset karena tata letak berubah
+    form.addEventListener('focusout', () => setTimeout(updateTyping, 200));
+    window.addEventListener('resize', updateTyping);
+    if (window.visualViewport) visualViewport.addEventListener('resize', updateTyping);
+
+    form.addEventListener('input', saveDraft);
+    form.addEventListener('change', saveDraft);
+    window.addEventListener('pagehide', saveDraft);
+
+    // Initial run
+    form.querySelectorAll('select').forEach(enhanceSelect);
+    const [restoredScreen, restored] = restoreDraft();
+    syncAllWidgets();
+    showScreen(participantNameInput.value.trim() ? restoredScreen : 0);
+    if (restored) showToast('Isian sebelumnya dipulihkan dari perangkat ini.');
+  </script>
+</body>
+</html>

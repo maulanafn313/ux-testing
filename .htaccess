@@ -1,0 +1,6 @@
+DirectoryIndex index.html
+
+# config.php hanya untuk di-include, jangan diakses langsung
+<Files "config.php">
+    Require all denied
+</Files>
